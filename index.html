@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0F2544">
+<title>منظومة العمليات التنفيذية</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --p:#0F2544;--p2:#1a3a6b;--a:#2563EB;--g:#16A34A;--w:#D97706;--d:#DC2626;
+  --pur:#7C3AED;--tl:#0D9488;--rose:#E11D48;--sky:#0284C7;
+  --bg:#F1F5F9;--card:#FFFFFF;--border:#E2E8F0;--text:#0F172A;--muted:#64748B;
+  --r:14px;--sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+  --sh2:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06);
+}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ═══ TOPBAR ═══ */
+.tb{position:sticky;top:0;z-index:200;background:var(--p);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.tb-logo{display:flex;align-items:center;gap:8px;color:#fff;font-size:14px;font-weight:800}
+.tb-logo small{font-size:9px;opacity:.55;font-weight:400;display:block;margin-top:-2px}
+.tb-r{display:flex;align-items:center;gap:8px}
+.chip{background:rgba(255,255,255,.12);color:#fff;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:500}
+.heat-chip{padding:3px 12px;border-radius:999px;font-size:11px;font-weight:800;transition:.3s}
+.heat-g{background:#16A34A;color:#fff}
+.heat-y{background:#D97706;color:#fff}
+.heat-r{background:#DC2626;color:#fff}
+
+/* ═══ BOTTOM NAV ═══ */
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--card);border-top:1px solid var(--border);display:flex;overflow-x:auto;scrollbar-width:none;padding-bottom:env(safe-area-inset-bottom,0px)}
+.bnav::-webkit-scrollbar{display:none}
+.bn{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;padding:7px 12px 5px;cursor:pointer;border:none;background:none;font-family:inherit;color:var(--muted);font-size:9px;font-weight:700;gap:2px;min-width:56px;transition:.15s;white-space:nowrap;position:relative}
+.bn .ic{font-size:19px;line-height:1;transition:.15s}
+.bn.on{color:var(--a)}
+.bn.on .ic{transform:scale(1.1)}
+.bn-badge{position:absolute;top:4px;right:8px;background:var(--d);color:#fff;border-radius:999px;font-size:9px;font-weight:800;padding:1px 5px;min-width:16px;text-align:center}
+
+/* ═══ PAGES ═══ */
+.pg{display:none;padding:12px 12px 85px;max-width:820px;margin:0 auto;animation:fadeIn .2s}
+.pg.on{display:block}
+@keyframes fadeIn{from{opacity:.6;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.pg-title{font-size:17px;font-weight:800;color:var(--p);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pg-title-left{display:flex;align-items:center;gap:8px}
+
+/* ═══ CARDS ═══ */
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:12px;overflow:hidden}
+.ch{padding:10px 15px;font-size:13px;font-weight:700;color:#fff;display:flex;align-items:center;gap:7px}
+.ch.p{background:var(--p)}.ch.a{background:var(--a)}.ch.g{background:var(--g)}
+.ch.w{background:var(--w)}.ch.d{background:var(--d)}.ch.pur{background:var(--pur)}
+.ch.tl{background:var(--tl)}.ch.rose{background:var(--rose)}.ch.sky{background:var(--sky)}.ch.dk{background:#334155}
+.cb{padding:13px 15px}
+
+/* ═══ KPI GRID ═══ */
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:8px;margin-bottom:12px}
+.kc{background:var(--card);border-radius:12px;padding:12px 8px;text-align:center;box-shadow:var(--sh);border-bottom:3px solid transparent}
+.kc .kv{font-size:24px;font-weight:900;line-height:1}
+.kc .kl{font-size:9px;color:var(--muted);margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+.kc.red{border-color:var(--d)}.kc.red .kv{color:var(--d)}
+.kc.ora{border-color:var(--w)}.kc.ora .kv{color:var(--w)}
+.kc.grn{border-color:var(--g)}.kc.grn .kv{color:var(--g)}
+.kc.blu{border-color:var(--a)}.kc.blu .kv{color:var(--a)}
+.kc.pur{border-color:var(--pur)}.kc.pur .kv{color:var(--pur)}
+
+/* ═══ HEAT METER ═══ */
+.heat-meter{background:var(--card);border-radius:var(--r);padding:14px 16px;margin-bottom:12px;box-shadow:var(--sh)}
+.hm-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.hm-title{font-size:13px;font-weight:700;color:var(--p)}
+.hm-score{font-size:28px;font-weight:900}
+.hm-bar-track{height:12px;background:var(--border);border-radius:999px;overflow:hidden;margin-bottom:8px}
+.hm-bar-fill{height:100%;border-radius:999px;transition:width .6s ease}
+.hm-indicators{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.hm-ind{background:var(--bg);border-radius:8px;padding:6px 8px;text-align:center}
+.hm-ind .iv{font-size:14px;font-weight:800}
+.hm-ind .il{font-size:9px;color:var(--muted);margin-top:2px}
+
+/* ═══ ACTION ITEMS ═══ */
+.ai-item{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border-radius:10px;margin-bottom:7px;border:1.5px solid var(--border);background:var(--card);transition:.2s}
+.ai-item.ai-red{border-color:var(--d);background:#FFF5F5}
+.ai-item.ai-ora{border-color:var(--w);background:#FFFBF0}
+.ai-item.ai-grn{border-color:var(--g);background:#F0FDF4}
+.ai-left{flex:1}
+.ai-title{font-size:13px;font-weight:700;color:var(--text)}
+.ai-meta{font-size:11px;color:var(--muted);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
+.ai-days{font-weight:800}
+.ai-days.red{color:var(--d)}.ai-days.ora{color:var(--w)}.ai-days.grn{color:var(--g)}
+.ai-close-btn{padding:5px 12px;border:none;border-radius:7px;background:var(--g);color:#fff;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+
+/* ═══ ZONE MAP ═══ */
+.zone-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.zone-card{background:var(--card);border-radius:var(--r);padding:13px;box-shadow:var(--sh);border-top:4px solid var(--a)}
+.zone-card.gf{border-color:var(--a)}
+.zone-card.ff{border-color:var(--pur)}
+.zone-name{font-size:14px;font-weight:800;color:var(--p);margin-bottom:8px}
+.zone-stat{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:1px solid var(--border)}
+.zone-stat:last-child{border:none}
+.zone-stat .zv{font-weight:800}
+.zone-stat .zv.red{color:var(--d)}.zone-stat .zv.ora{color:var(--w)}.zone-stat .zv.grn{color:var(--g)}
+
+/* ═══ SHOP INTEL ═══ */
+.shop-search{display:flex;gap:8px;margin-bottom:12px}
+.shop-search input{flex:1;padding:11px 14px;border:2px solid var(--border);border-radius:10px;font-size:15px;font-weight:700;font-family:inherit;background:var(--bg);color:var(--text);text-align:center;transition:.2s}
+.shop-search input:focus{outline:none;border-color:var(--a);background:#fff}
+.shop-search button{padding:11px 18px;background:var(--a);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.shop-profile{background:var(--card);border-radius:var(--r);padding:15px;box-shadow:var(--sh2);margin-bottom:12px}
+.sp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.sp-num{font-size:32px;font-weight:900;color:var(--p)}
+.sp-name{font-size:16px;font-weight:700}
+.sp-floor{font-size:12px;color:var(--muted)}
+.sp-grade{padding:6px 16px;border-radius:999px;font-size:13px;font-weight:800}
+.gr-A{background:#DCFCE7;color:#15803D}
+.gr-B{background:#D1FAE5;color:#065F46}
+.gr-C{background:#FEF3C7;color:#92400E}
+.gr-D{background:#FFE4E6;color:#9F1239}
+.gr-F{background:#FEE2E2;color:#7F1D1D}
+.sp-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.sp-stat{background:var(--bg);border-radius:8px;padding:8px;text-align:center}
+.sp-stat .sv{font-size:18px;font-weight:800;color:var(--p)}
+.sp-stat .sl{font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase}
+.trend-bar{display:flex;gap:3px;align-items:flex-end;height:32px;margin-bottom:4px}
+.tb-bar{flex:1;border-radius:3px 3px 0 0;min-height:3px;transition:.3s}
+.trend-label{font-size:10px;color:var(--muted);text-align:center}
+.alert-box{background:#FFF5F5;border:1.5px solid var(--d);border-radius:9px;padding:9px 12px;margin-bottom:8px;font-size:12px;font-weight:700;color:var(--d)}
+
+/* ═══ FORMS ═══ */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
+@media(max-width:480px){.fg3{grid-template-columns:1fr 1fr}}
+@media(max-width:360px){.fg,.fg3{grid-template-columns:1fr}}
+.fi{display:flex;flex-direction:column;gap:4px}
+.fi label{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.fi input,.fi select,.fi textarea{padding:9px 11px;border:1.5px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;background:#FAFBFC;color:var(--text);width:100%;transition:.2s}
+.fi input:focus,.fi select:focus,.fi textarea:focus{outline:none;border-color:var(--a);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.fi textarea{resize:vertical;min-height:65px}
+
+/* ═══ SYSTEMS GRID ═══ */
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:7px}
+.si{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;background:#FAFBFC;gap:8px}
+.si .sn{font-size:12px;font-weight:600;flex:1}
+.si select{padding:4px 7px;border:1px solid var(--border);border-radius:7px;font-size:11px;font-family:inherit;background:#fff;color:var(--text)}
+
+/* ═══ TASK LIST ═══ */
+.task-item{display:flex;align-items:flex-start;gap:9px;padding:9px 12px;border:1.5px solid var(--border);border-radius:9px;margin-bottom:6px;background:#FAFBFC;transition:.2s}
+.task-item.done{opacity:.4;background:var(--card)}
+.task-item input[type=checkbox]{width:19px;height:19px;margin-top:1px;cursor:pointer;accent-color:var(--g);flex-shrink:0}
+.task-text{font-size:13px;flex:1;font-weight:500;line-height:1.4}
+.task-text.done{text-decoration:line-through;color:var(--muted)}
+.period-hdr-bar{border-radius:10px;padding:11px 15px;margin-bottom:10px;color:#fff;display:flex;align-items:center;justify-content:space-between}
+.ph1{background:linear-gradient(135deg,#0F2544,#1a3a6b)}
+.ph2{background:linear-gradient(135deg,#B45309,#D97706)}
+.ph3{background:linear-gradient(135deg,#5B21B6,#7C3AED)}
+.ph4{background:linear-gradient(135deg,#991B1B,#DC2626)}
+
+/* ═══ TOUR ═══ */
+.tour-box{background:var(--card);border-radius:var(--r);box-shadow:var(--sh2);margin-bottom:12px;overflow:hidden;border:2px solid var(--a)}
+.tour-hdr{background:var(--p);padding:10px 15px;color:#fff;font-size:13px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.tour-body{padding:13px}
+.num-row{display:flex;gap:8px;margin-bottom:11px}
+.ni{flex:1;padding:11px;border:2px solid var(--border);border-radius:9px;font-size:18px;font-weight:900;text-align:center;font-family:inherit;background:#FAFBFC;color:var(--text);transition:.2s}
+.ni:focus{outline:none;border-color:var(--a);background:#fff}
+.nname{flex:2;padding:11px;border:2px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;background:#FAFBFC;color:var(--text);transition:.2s}
+.nname:focus{outline:none;border-color:var(--a);background:#fff}
+.stars-row{display:flex;justify-content:center;gap:9px;margin-bottom:12px}
+.star{font-size:36px;cursor:pointer;color:var(--border);user-select:none;line-height:1;transition:.1s}
+.star.on{color:#F59E0B}
+.flags{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:11px}
+.fb2{padding:8px 4px;border:2px solid var(--border);border-radius:9px;background:#FAFBFC;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center;line-height:1.4;transition:.15s;color:var(--text)}
+.fb2.on.f-ok{background:#F0FDF4;color:var(--g);border-color:var(--g)}
+.fb2.on.f-close{background:#FFF5F5;color:var(--d);border-color:var(--d)}
+.fb2.on.f-viol{background:#FFFBF0;color:var(--w);border-color:var(--w)}
+.fb2.on.f-maint{background:#EFF6FF;color:var(--a);border-color:var(--a)}
+.fb2.on.f-safe{background:#FFF5F5;color:var(--d);border-color:var(--d)}
+.fb2.on.f-bakhoor{background:#FAF5FF;color:var(--pur);border-color:var(--pur)}
+.save-tour{width:100%;padding:13px;border:none;border-radius:10px;background:var(--g);color:#fff;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;transition:.15s}
+.save-tour:active{transform:scale(.98)}
+
+/* ═══ PTABS ═══ */
+.ptabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.ptabs::-webkit-scrollbar{display:none}
+.ptab{padding:7px 13px;border-radius:999px;border:2px solid var(--border);background:var(--card);font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;transition:.2s;color:var(--text)}
+.ptab.on{color:#fff;border-color:transparent}
+.pt1.on{background:#0F2544}.pt2.on{background:#D97706}.pt3.on{background:#7C3AED}.pt4.on{background:#DC2626}
+
+/* ═══ TABLES ═══ */
+.tw{overflow-x:auto;border-radius:10px}
+.rt{width:100%;border-collapse:collapse;font-size:12px}
+.rt th{background:var(--p);color:#fff;padding:8px 10px;font-weight:700;white-space:nowrap;text-align:right}
+.rt td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+.rt tr:last-child td{border:none}
+.rt tr:hover td{background:#F8FAFF}
+.bg_{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.ok{background:#DCFCE7;color:#15803D}.bw{background:#FEF3C7;color:#92400E}.bd{background:#FEE2E2;color:#991B1B}
+
+/* ═══ EXPIRY ═══ */
+.exp-row{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-radius:10px;margin-bottom:8px;background:var(--card);border:1.5px solid var(--border);box-shadow:var(--sh);flex-wrap:wrap;gap:8px}
+.er-left .er-title{font-size:13px;font-weight:700}
+.er-left .er-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.dp{padding:4px 12px;border-radius:999px;font-size:12px;font-weight:800}
+.dp-r{background:#FEE2E2;color:#991B1B}.dp-o{background:#FEF3C7;color:#92400E}.dp-g{background:#DCFCE7;color:#15803D}
+
+/* ═══ REPORT ═══ */
+.report-box{background:var(--p);border-radius:var(--r);padding:16px;margin-bottom:12px;color:#fff}
+.rb-title{font-size:14px;font-weight:800;margin-bottom:4px}
+.rb-sub{font-size:11px;opacity:.6}
+.report-preview{background:#1e3a5f;border-radius:10px;padding:13px;font-size:12px;font-family:monospace;line-height:1.7;white-space:pre-wrap;margin-top:12px;color:#e2e8f0;max-height:300px;overflow-y:auto}
+.copy-btn{width:100%;padding:11px;border:none;border-radius:9px;background:var(--g);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:10px}
+
+/* ═══ BUTTONS ═══ */
+.btn{padding:9px 20px;border-radius:9px;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
+.btn.p{background:var(--p);color:#fff}.btn.g{background:var(--g);color:#fff}
+.btn.d{background:var(--d);color:#fff}.btn.w{background:var(--w);color:#fff}
+.btn.a{background:var(--a);color:#fff}.btn.pur{background:var(--pur);color:#fff}
+.btn.tl{background:var(--tl);color:#fff}.btn.sky{background:var(--sky);color:#fff}
+.btn.sm{padding:4px 10px;font-size:11px;border-radius:7px}
+.btn.outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+.btn:hover{opacity:.88}.btn:active{transform:scale(.97)}
+.sr{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+
+/* ═══ ALERTS ═══ */
+.al{display:flex;gap:10px;padding:10px 13px;border-radius:10px;margin-bottom:7px}
+.al.r{background:#FFF5F5;border-right:4px solid var(--d)}
+.al.o{background:#FFFBF0;border-right:4px solid var(--w)}
+.al.g{background:#F0FDF4;border-right:4px solid var(--g)}
+.al .at{font-size:13px;font-weight:600}.al .as{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ═══ VISIT LOG ═══ */
+.vli{background:var(--card);border-radius:11px;border:1.5px solid var(--border);padding:10px 13px;margin-bottom:7px;box-shadow:var(--sh)}
+.vli-top{display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.vli-num{font-size:15px;font-weight:900;color:var(--p);min-width:38px}
+.vli-name{font-size:13px;font-weight:700;flex:1}
+.vli-stars{font-size:12px;color:#F59E0B}
+.vli-flags{display:flex;gap:3px;flex-wrap:wrap;margin-top:4px}
+.vf{padding:1px 7px;border-radius:999px;font-size:10px;font-weight:700}
+.vf-r{background:#FEE2E2;color:#991B1B}.vf-o{background:#FEF3C7;color:#92400E}
+.vf-b{background:#DBEAFE;color:#1E40AF}.vf-p{background:#EDE9FE;color:#5B21B6}.vf-g{background:#DCFCE7;color:#15803D}
+.vli-note{font-size:11px;color:var(--muted);margin-top:5px;font-style:italic}
+.delbtn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:3px 6px;border-radius:6px}
+.delbtn:hover{background:#FEE2E2;color:var(--d)}
+.sec-hdr{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:11px 0 6px;padding-right:2px}
+
+/* ═══ MISC ═══ */
+.empty{text-align:center;padding:30px;color:var(--muted);font-size:13px;font-weight:500}
+.divider{border:none;border-top:1px solid var(--border);margin:12px 0}
+.tag{display:inline-block;padding:2px 9px;border-radius:999px;font-size:10px;font-weight:700;margin:2px}
+.flash{position:fixed;inset:0;background:rgba(22,163,74,.1);pointer-events:none;opacity:0;transition:opacity .25s;z-index:999}
+.flash.on{opacity:1}
+.toast{position:fixed;bottom:75px;left:50%;transform:translateX(-50%);color:#fff;padding:9px 20px;border-radius:999px;font-size:13px;font-weight:700;z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.toast.on{opacity:1}
+.fb{padding:5px 12px;border-radius:999px;border:1.5px solid var(--border);background:var(--card);font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--text);transition:.15s}
+.fb.on{background:var(--p);color:#fff;border-color:var(--p)}
+.filter-bar{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.comparison-row{display:flex;gap:8px;margin-bottom:8px;align-items:center}
+.cr-label{font-size:12px;color:var(--muted);width:80px;flex-shrink:0}
+.cr-bar-track{flex:1;height:8px;background:var(--border);border-radius:999px;overflow:hidden}
+.cr-bar-fill{height:100%;border-radius:999px;transition:width .6s}
+.cr-val{font-size:12px;font-weight:800;color:var(--p);min-width:28px;text-align:left}
+.backup-box{background:var(--bg);border:1.5px dashed var(--border);border-radius:var(--r);padding:16px;text-align:center;margin-bottom:12px}
+.bb-icon{font-size:32px;margin-bottom:8px}
+.bb-title{font-size:14px;font-weight:700;color:var(--p);margin-bottom:4px}
+.bb-sub{font-size:12px;color:var(--muted);margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="tb">
+  <div class="tb-logo">&#9881;&#65039;<div><div>منظومة العمليات التنفيذية</div><small>Operations Intelligence — GF &amp; FF</small></div></div>
+  <div class="tb-r">
+    <div class="heat-chip heat-g" id="heatChip">&#127777; 92%</div>
+    <div class="chip" id="dateBadge"></div>
+  </div>
+</div>
+
+<!-- ══════ PAGE: DASHBOARD ══════ -->
+<div class="pg on" id="pg-dash">
+  <div class="heat-meter">
+    <div class="hm-top">
+      <div><div class="hm-title">&#127777; حرارة المول — Mall Health Score</div><div style="font-size:11px;color:var(--muted);margin-top:2px">مؤشر مركّب من 6 عوامل تشغيلية</div></div>
+      <div class="hm-score" id="hm-score" style="color:var(--g)">92%</div>
+    </div>
+    <div class="hm-bar-track"><div class="hm-bar-fill" id="hm-fill" style="width:92%;background:var(--g)"></div></div>
+    <div class="hm-indicators" id="hm-indicators"></div>
+  </div>
+  <div class="kgrid" id="kpiGrid"></div>
+  <div class="card"><div class="ch d">&#128680; تنبيهات فورية تحتاج إجراء</div><div class="cb" id="alertsPanel"></div></div>
+  <div class="card"><div class="ch p">&#128202; أداء المناطق — GF &amp; FF</div><div class="cb"><div class="zone-grid" id="zoneGrid"></div></div></div>
+  <div class="card"><div class="ch a">&#128293; أسوأ 5 معارض — هذا الشهر</div><div class="cb" id="worst5Panel"></div></div>
+  <div class="card"><div class="ch sky">&#128337; مقارنة الأسبوع</div><div class="cb" id="weekCompare"></div></div>
+</div>
+
+<!-- ══════ PAGE: ACTION ITEMS ══════ -->
+<div class="pg" id="pg-actions">
+  <div class="pg-title"><div class="pg-title-left">&#9889; Action Items الموحدة</div><span style="font-size:12px;font-weight:500;color:var(--muted)" id="aiCount">0 بند مفتوح</span></div>
+  <div class="filter-bar">
+    <button class="fb on" data-filter="all" onclick="setAIFilter(this)">الكل</button>
+    <button class="fb" data-filter="maint" onclick="setAIFilter(this)">&#128295; صيانة</button>
+    <button class="fb" data-filter="incident" onclick="setAIFilter(this)">&#128680; حوادث</button>
+    <button class="fb" data-filter="tenant" onclick="setAIFilter(this)">&#127978; مخالفات</button>
+    <button class="fb" data-filter="safety" onclick="setAIFilter(this)">&#128293; سلامة</button>
+    <button class="fb" data-filter="overdue" onclick="setAIFilter(this)">&#128308; متأخرة</button>
+  </div>
+  <div id="actionItemsList"></div>
+  <div class="card" style="margin-top:8px">
+    <div class="ch g">&#10133; إضافة Action Item يدوي</div>
+    <div class="cb">
+      <div class="fg" style="margin-bottom:9px">
+        <div class="fi"><label>العنوان</label><input type="text" id="ai_title" placeholder="وصف البند..."></div>
+        <div class="fi"><label>النوع</label><select id="ai_type"><option value="maint">صيانة</option><option value="incident">حادثة</option><option value="tenant">مخالفة</option><option value="safety">سلامة</option><option value="other">أخرى</option></select></div>
+        <div class="fi"><label>المسؤول</label><input type="text" id="ai_owner" placeholder="الاسم"></div>
+        <div class="fi"><label>الموعد النهائي</label><input type="date" id="ai_due"></div>
+      </div>
+      <div class="sr"><button class="btn g" onclick="addActionItem()">&#10133; إضافة</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PAGE: SHOP INTEL ══════ -->
+<div class="pg" id="pg-intel">
+  <div class="pg-title"><div class="pg-title-left">&#128269; تدقيق المعارض</div></div>
+  <div class="shop-search">
+    <input type="text" id="si_num" placeholder="رقم المعرض" inputmode="numeric" maxlength="6">
+    <button onclick="searchShop()">&#128269; بحث</button>
+  </div>
+  <div id="shopProfile"></div>
+  <div class="card"><div class="ch p">&#127941; تصنيف المعارض تلقائياً</div><div class="cb" id="shopRanking"></div></div>
+</div>
+
+<!-- ══════ PAGE: ZONE MAP ══════ -->
+<div class="pg" id="pg-zones">
+  <div class="pg-title"><div class="pg-title-left">&#128205; خريطة المناطق — GF &amp; FF</div></div>
+  <div class="card"><div class="ch a">&#127968; الطابق الأرضي — Ground Floor</div>
+    <div class="cb">
+      <div id="gfZones"></div>
+      <div class="divider"></div>
+      <div class="fi"><label>إضافة ملاحظة للطابق الأرضي</label><textarea id="gf_note" placeholder="ملاحظة عامة على الطابق الأرضي..."></textarea></div>
+      <div class="sr"><button class="btn a sm" onclick="saveZoneNote('GF')">حفظ</button></div>
+    </div>
+  </div>
+  <div class="card"><div class="ch pur">&#127968; الطابق الأول — First Floor</div>
+    <div class="cb">
+      <div id="ffZones"></div>
+      <div class="divider"></div>
+      <div class="fi"><label>إضافة ملاحظة للطابق الأول</label><textarea id="ff_note" placeholder="ملاحظة عامة على الطابق الأول..."></textarea></div>
+      <div class="sr"><button class="btn pur sm" onclick="saveZoneNote('FF')">حفظ</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PAGE: SHIFT PLAN ══════ -->
+<div class="pg" id="pg-plan">
+  <div class="pg-title"><div class="pg-title-left">&#128197; خطة الشفت 4م—12ص</div></div>
+  <div class="card"><div class="ch a">&#9881;&#65039; معلومات الشفت</div>
+    <div class="cb">
+      <div class="fg3">
+        <div class="fi"><label>التاريخ</label><input type="date" id="pl_date"></div>
+        <div class="fi"><label>المعد</label><input type="text" id="pl_by" placeholder="اسمك"></div>
+        <div class="fi"><label>الحالة العامة</label><select id="pl_status"><option>طبيعي</option><option>مشكلة بسيطة</option><option>مشكلة حرجة</option></select></div>
+      </div>
+    </div>
+  </div>
+  <div class="ptabs" id="planTabs">
+    <button class="ptab pt1 on" onclick="showPeriod(0,this)">&#127749; 4—6 م</button>
+    <button class="ptab pt2" onclick="showPeriod(1,this)">&#127961; 6—9 م</button>
+    <button class="ptab pt3" onclick="showPeriod(2,this)">&#127750; 9—11 م</button>
+    <button class="ptab pt4" onclick="showPeriod(3,this)">&#127769; 11—12 ص</button>
+  </div>
+  <div id="periodContent"></div>
+  <div class="sr"><button class="btn g" onclick="savePlan()">&#128190; حفظ خطة الشفت</button></div>
+</div>
+
+<!-- ══════ PAGE: TOUR ══════ -->
+<div class="pg" id="pg-tour">
+  <div class="pg-title"><div class="pg-title-left">&#127939; جولة المعارض</div><span style="font-size:12px;color:var(--muted)" id="tourCount">0 زيارة</span></div>
+  <div class="kgrid" id="tourKPI"></div>
+  <div class="ptabs" id="tourTabs">
+    <button class="ptab pt1 on" onclick="setTourPeriod(1,this)">&#127749; 4—6</button>
+    <button class="ptab pt2" onclick="setTourPeriod(2,this)">&#127961; 6—9</button>
+    <button class="ptab pt3" onclick="setTourPeriod(3,this)">&#127750; 9—11</button>
+    <button class="ptab pt4" onclick="setTourPeriod(4,this)">&#127769; 11—12</button>
+  </div>
+  <div class="tour-box">
+    <div class="tour-hdr"><span>&#10133; تسجيل معرض</span><span id="tourPLbl" style="font-size:10px;opacity:.7">&#127749; الافتتاحية</span></div>
+    <div class="tour-body">
+      <div class="num-row">
+        <input class="ni" type="text" id="tr_num" placeholder="رقم" inputmode="numeric" maxlength="6">
+        <input class="nname" type="text" id="tr_name" placeholder="اسم المعرض (اختياري)">
+      </div>
+      <div class="stars-row" id="tourStars"></div>
+      <div class="flags">
+        <button class="fb2 f-ok" data-flag="ok" onclick="toggleFlag(this)">&#10003;<br>سليم</button>
+        <button class="fb2 f-close" data-flag="close" onclick="toggleFlag(this)">&#10007;<br>مغلق</button>
+        <button class="fb2 f-viol" data-flag="viol" onclick="toggleFlag(this)">&#9888;<br>مخالفة</button>
+        <button class="fb2 f-maint" data-flag="maint" onclick="toggleFlag(this)">&#128295;<br>صيانة</button>
+        <button class="fb2 f-safe" data-flag="safe" onclick="toggleFlag(this)">&#128293;<br>سلامة</button>
+        <button class="fb2 f-bakhoor" data-flag="bakhoor" onclick="toggleFlag(this)">&#10022;<br>بخور</button>
+      </div>
+      <div class="fi" style="margin-bottom:10px"><label>ملاحظة سريعة</label><input type="text" id="tr_note" placeholder="اختياري..."></div>
+      <button class="save-tour" onclick="saveTour()">&#128190; حفظ والتالي</button>
+    </div>
+  </div>
+  <div class="filter-bar">
+    <button class="fb on" data-filter="all" onclick="setTourFilter(this)">الكل</button>
+    <button class="fb" data-filter="close" onclick="setTourFilter(this)">&#10007;</button>
+    <button class="fb" data-filter="viol" onclick="setTourFilter(this)">&#9888;</button>
+    <button class="fb" data-filter="maint" onclick="setTourFilter(this)">&#128295;</button>
+    <button class="fb" data-filter="safe" onclick="setTourFilter(this)">&#128293;</button>
+  </div>
+  <div id="tourLog"></div>
+</div>
+
+<!-- ══════ PAGE: MAINTENANCE ══════ -->
+<div class="pg" id="pg-maint">
+  <div class="pg-title"><div class="pg-title-left">&#128295; الصيانة</div></div>
+  <div class="card"><div class="ch p">&#128295; تسجيل بلاغ صيانة</div>
+    <div class="cb">
+      <div class="fg3" style="margin-bottom:9px">
+        <div class="fi"><label>النوع</label><select id="m_type"><option>بلاط</option><option>كهرباء</option><option>دهان</option><option>سباكة</option><option>نجارة</option><option>تكييف</option><option>زجاج</option><option>إنارة</option><option>أبواب</option><option>أسقف</option><option>HVAC</option><option>مولدات</option><option>أخرى</option></select></div>
+        <div class="fi"><label>المنطقة</label><select id="m_zone"><option>GF — مدخل رئيسي</option><option>GF — ممرات</option><option>GF — فود كورت</option><option>GF — دورات مياه</option><option>GF — مواقف</option><option>FF — ممرات</option><option>FF — ترفيه</option><option>FF — دورات مياه</option><option>مشتركة — مصاعد</option><option>مشتركة — غرف تحكم</option></select></div>
+        <div class="fi"><label>الأولوية</label><select id="m_pri"><option value="4">&#128308; عاجل</option><option value="3">&#128992; عالي</option><option value="2">&#128993; متوسط</option><option value="1">&#128994; منخفض</option></select></div>
+      </div>
+      <div class="fg" style="margin-bottom:9px">
+        <div class="fi"><label>المقاول / الفريق</label><input type="text" id="m_con"></div>
+        <div class="fi"><label>التكلفة التقديرية (ر.س)</label><input type="number" id="m_cost" placeholder="0"></div>
+        <div class="fi"><label>الحالة</label><select id="m_st"><option value="open">مفتوح</option><option value="progress">قيد التنفيذ</option><option value="done">مكتمل</option><option value="hold">معلق</option></select></div>
+        <div class="fi"><label>موعد الإنجاز</label><input type="date" id="m_due"></div>
+      </div>
+      <div class="fi"><label>وصف المشكلة</label><textarea id="m_desc" placeholder="وصف تفصيلي..."></textarea></div>
+      <div class="sr"><button class="btn p" onclick="saveMaint()">&#128190; حفظ وإضافة للمتابعة</button></div>
+    </div>
+  </div>
+  <div class="card"><div class="ch p">&#128203; سجل الصيانة</div><div class="cb"><div class="tw" id="maintList"></div></div></div>
+</div>
+
+<!-- ══════ PAGE: INCIDENTS ══════ -->
+<div class="pg" id="pg-inc">
+  <div class="pg-title"><div class="pg-title-left">&#128680; الحوادث</div></div>
+  <div class="card"><div class="ch d">&#128680; تسجيل حادثة</div>
+    <div class="cb">
+      <div class="fg3" style="margin-bottom:9px">
+        <div class="fi"><label>النوع</label><select id="i_type"><option>سلامة</option><option>أمن</option><option>صيانة</option><option>حريق</option><option>شكوى عميل</option><option>سرقة</option><option>أخرى</option></select></div>
+        <div class="fi"><label>التاريخ والوقت</label><input type="datetime-local" id="i_date"></div>
+        <div class="fi"><label>المنطقة</label><select id="i_zone"><option>GF — مدخل رئيسي</option><option>GF — ممرات</option><option>GF — فود كورت</option><option>GF — دورات مياه</option><option>FF — ممرات</option><option>FF — ترفيه</option><option>مواقف</option><option>أخرى</option></select></div>
+        <div class="fi"><label>الخطورة</label><select id="i_sev"><option value="1">منخفض</option><option value="2">متوسط</option><option value="3">عالي</option><option value="4">حرج</option></select></div>
+        <div class="fi"><label>المسؤول عن المتابعة</label><input type="text" id="i_own"></div>
+        <div class="fi"><label>الحالة</label><select id="i_st"><option value="open">مفتوح</option><option value="progress">قيد المعالجة</option><option value="done">مغلق</option></select></div>
+      </div>
+      <div class="fg">
+        <div class="fi"><label>تفاصيل ما حدث</label><textarea id="i_det"></textarea></div>
+        <div class="fi"><label>الإجراء الفوري المتخذ</label><textarea id="i_act"></textarea></div>
+      </div>
+      <div class="sr"><button class="btn d" onclick="saveInc()">&#128680; تسجيل وإضافة للمتابعة</button></div>
+    </div>
+  </div>
+  <div class="card"><div class="ch d">&#128203; سجل الحوادث</div><div class="cb"><div class="tw" id="incList"></div></div></div>
+</div>
+
+<!-- ══════ PAGE: TENANTS ══════ -->
+<div class="pg" id="pg-ten">
+  <div class="pg-title"><div class="pg-title-left">&#127978; المستأجرون</div></div>
+  <div class="card"><div class="ch w">&#127978; تسجيل مخالفة</div>
+    <div class="cb">
+      <div class="fg3" style="margin-bottom:9px">
+        <div class="fi"><label>رقم المحل</label><input type="text" id="t_num" inputmode="numeric"></div>
+        <div class="fi"><label>اسم المحل</label><input type="text" id="t_name"></div>
+        <div class="fi"><label>الطابق</label><select id="t_floor"><option>GF</option><option>FF</option></select></div>
+        <div class="fi"><label>نوع المخالفة</label><select id="t_type"><option>مغلق بدون إشعار</option><option>تجاوز حد العرض</option><option>أعمال بدون تصريح</option><option>لوحة مخالفة</option><option>نظافة</option><option>ضوضاء</option><option>مخالفة عقد</option><option>بخور بدون تصريح</option><option>عمالة مخالفة</option><option>أخرى</option></select></div>
+        <div class="fi"><label>مستوى الإجراء</label><select id="t_warn"><option value="1">تنبيه شفهي</option><option value="2">إنذار أول</option><option value="3">إنذار ثاني</option><option value="4">غرامة</option><option value="5">إغلاق</option></select></div>
+        <div class="fi"><label>الحالة</label><select id="t_st"><option value="open">مفتوح</option><option value="done">تم الإجراء</option></select></div>
+      </div>
+      <div class="fi"><label>التفاصيل</label><textarea id="t_det"></textarea></div>
+      <div class="sr"><button class="btn w" onclick="saveTenant()">&#128190; تسجيل وإضافة للمتابعة</button></div>
+    </div>
+  </div>
+  <div class="card"><div class="ch w">&#128203; سجل المخالفات</div><div class="cb"><div class="tw" id="tenList"></div></div></div>
+</div>
+
+<!-- ══════ PAGE: SAFETY ══════ -->
+<div class="pg" id="pg-safe">
+  <div class="pg-title"><div class="pg-title-left">&#128293; السلامة والطفايات</div></div>
+  <div class="card"><div class="ch d">&#128293; فحص معدة سلامة</div>
+    <div class="cb">
+      <div class="fg3" style="margin-bottom:9px">
+        <div class="fi"><label>الرقم التسلسلي</label><input type="text" id="sf_num" placeholder="EXT-GF-001"></div>
+        <div class="fi"><label>الطابق / الموقع</label><select id="sf_zone"><option>GF — مدخل رئيسي</option><option>GF — ممرات</option><option>GF — فود كورت</option><option>GF — مطبخ</option><option>GF — مخزن</option><option>FF — ممرات</option><option>FF — ترفيه</option><option>مشتركة — غرف تحكم</option><option>مواقف</option></select></div>
+        <div class="fi"><label>النوع</label><select id="sf_ty"><option>طفاية CO2</option><option>طفاية بودرة</option><option>طفاية فوم</option><option>كاشف دخان</option><option>كاشف حرارة</option><option>رشاش حريق</option><option>بكرة خرطوم</option><option>لوحة طوارئ</option><option>باب حريق</option></select></div>
+        <div class="fi"><label>الحالة</label><select id="sf_st"><option value="ok">سليمة</option><option value="service">تحتاج صيانة</option><option value="expired">منتهية الصلاحية</option><option value="missing">مفقودة</option></select></div>
+        <div class="fi"><label>تاريخ انتهاء الصلاحية</label><input type="date" id="sf_exp"></div>
+        <div class="fi"><label>اسم الفاحص</label><input type="text" id="sf_ins"></div>
+      </div>
+      <div class="sr"><button class="btn d" onclick="saveSafety()">&#128293; حفظ</button></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch d">&#128203; سجل معدات السلامة</div>
+    <div class="cb">
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <div style="background:var(--bg);border-radius:9px;padding:8px 14px;text-align:center;flex:1">
+          <div style="font-size:20px;font-weight:800;color:var(--g)" id="sf_ok_count">0</div>
+          <div style="font-size:10px;color:var(--muted)">سليمة</div>
+        </div>
+        <div style="background:var(--bg);border-radius:9px;padding:8px 14px;text-align:center;flex:1">
+          <div style="font-size:20px;font-weight:800;color:var(--w)" id="sf_svc_count">0</div>
+          <div style="font-size:10px;color:var(--muted)">تحتاج صيانة</div>
+        </div>
+        <div style="background:var(--bg);border-radius:9px;padding:8px 14px;text-align:center;flex:1">
+          <div style="font-size:20px;font-weight:800;color:var(--d)" id="sf_exp_count">0</div>
+          <div style="font-size:10px;color:var(--muted)">منتهية</div>
+        </div>
+        <div style="background:var(--bg);border-radius:9px;padding:8px 14px;text-align:center;flex:1">
+          <div style="font-size:20px;font-weight:800;color:var(--d)" id="sf_mis_count">0</div>
+          <div style="font-size:10px;color:var(--muted)">مفقودة</div>
+        </div>
+      </div>
+      <div class="tw" id="sfList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PAGE: CONTRACTS ══════ -->
+<div class="pg" id="pg-con">
+  <div class="pg-title"><div class="pg-title-left">&#128196; العقود والرخص</div></div>
+  <div class="card"><div class="ch pur">&#128196; إضافة عقد / رخصة / تأمين</div>
+    <div class="cb">
+      <div class="fg3" style="margin-bottom:9px">
+        <div class="fi"><label>النوع</label><select id="c_type"><option>عقد صيانة</option><option>تأمين</option><option>رخصة دفاع مدني</option><option>رخصة بلدية</option><option>عقد نظافة</option><option>عقد أمن</option><option>عقد Pest Control</option><option>عقد لاندسكيب</option><option>رخصة مستأجر</option><option>أخرى</option></select></div>
+        <div class="fi"><label>الجهة / المقاول</label><input type="text" id="c_name"></div>
+        <div class="fi"><label>رقم المرجع</label><input type="text" id="c_ref"></div>
+        <div class="fi"><label>تاريخ البداية</label><input type="date" id="c_start"></div>
+        <div class="fi"><label>تاريخ الانتهاء</label><input type="date" id="c_end"></div>
+        <div class="fi"><label>القيمة (ر.س)</label><input type="number" id="c_val" placeholder="0"></div>
+      </div>
+      <div class="fg">
+        <div class="fi"><label>الحالة</label><select id="c_st"><option value="active">ساري</option><option value="renew">قيد التجديد</option><option value="expired">منتهي</option><option value="cancelled">ملغى</option></select></div>
+        <div class="fi"><label>ملاحظات</label><input type="text" id="c_notes"></div>
+      </div>
+      <div class="sr"><button class="btn pur" onclick="saveContract()">&#128190; حفظ</button></div>
+    </div>
+  </div>
+  <div class="card"><div class="ch pur">&#128203; سجل العقود والرخص</div><div class="cb"><div class="tw" id="conList"></div></div></div>
+</div>
+
+<!-- ══════ PAGE: EXPIRING ══════ -->
+<div class="pg" id="pg-exp">
+  <div class="pg-title"><div class="pg-title-left">&#9200; المنتهية قريباً</div></div>
+  <div class="card"><div class="ch d">&#9200; كل ما ينتهي خلال 90 يوم</div><div class="cb" id="expiringPanel"></div></div>
+</div>
+
+<!-- ══════ PAGE: LANDSCAPE ══════ -->
+<div class="pg" id="pg-ls">
+  <div class="pg-title"><div class="pg-title-left">&#127807; اللاندسكيب</div></div>
+  <div class="card"><div class="ch g">&#127807; تسجيل صيانة لاندسكيب</div>
+    <div class="cb">
+      <div class="fg3" style="margin-bottom:9px">
+        <div class="fi"><label>المنطقة</label><select id="ls_zone"><option>GF — خارجي</option><option>GF — مدخل</option><option>FF — تراس</option><option>مواقف</option><option>أخرى</option></select></div>
+        <div class="fi"><label>نوع العمل</label><select id="ls_type"><option>ري</option><option>تقليم</option><option>زراعة</option><option>تسميد</option><option>رش مبيدات</option><option>صيانة دورية</option><option>أخرى</option></select></div>
+        <div class="fi"><label>المقاول</label><input type="text" id="ls_con"></div>
+        <div class="fi"><label>تاريخ التنفيذ</label><input type="date" id="ls_date"></div>
+        <div class="fi"><label>الموعد القادم</label><input type="date" id="ls_next"></div>
+        <div class="fi"><label>الحالة</label><select id="ls_st"><option>ممتاز</option><option>جيد</option><option>يحتاج عناية</option><option>سيء</option></select></div>
+      </div>
+      <div class="fi"><label>ملاحظات</label><textarea id="ls_notes"></textarea></div>
+      <div class="sr"><button class="btn g" onclick="saveLs()">&#127807; حفظ</button></div>
+    </div>
+  </div>
+  <div class="card"><div class="ch g">&#128203; سجل اللاندسكيب</div><div class="cb"><div class="tw" id="lsList"></div></div></div>
+</div>
+
+<!-- ══════ PAGE: PEST ══════ -->
+<div class="pg" id="pg-pest">
+  <div class="pg-title"><div class="pg-title-left">&#128027; Pest Control</div></div>
+  <div class="card"><div class="ch tl">&#128027; تسجيل عملية</div>
+    <div class="cb">
+      <div class="fg3" style="margin-bottom:9px">
+        <div class="fi"><label>نوع المعالجة</label><select id="pc_type"><option>رش دوري</option><option>مكافحة صراصير</option><option>مكافحة قوارض</option><option>مكافحة نمل</option><option>تعقيم</option><option>أخرى</option></select></div>
+        <div class="fi"><label>المنطقة</label><select id="pc_zone"><option>GF — فود كورت</option><option>GF — دورات مياه</option><option>GF — مخازن</option><option>FF — فود كورت</option><option>FF — دورات مياه</option><option>مواقف</option><option>الكامل</option></select></div>
+        <div class="fi"><label>المقاول</label><input type="text" id="pc_con"></div>
+        <div class="fi"><label>تاريخ التنفيذ</label><input type="date" id="pc_date"></div>
+        <div class="fi"><label>الموعد القادم</label><input type="date" id="pc_next"></div>
+        <div class="fi"><label>المواد المستخدمة</label><input type="text" id="pc_mat"></div>
+      </div>
+      <div class="sr"><button class="btn tl" onclick="savePest()">&#128027; حفظ</button></div>
+    </div>
+  </div>
+  <div class="card"><div class="ch tl">&#128203; سجل Pest Control</div><div class="cb"><div class="tw" id="pcList"></div></div></div>
+</div>
+
+<!-- ══════ PAGE: BAKHOOR ══════ -->
+<div class="pg" id="pg-bak">
+  <div class="pg-title"><div class="pg-title-left">&#10022; تصاريح البخور</div></div>
+  <div class="card"><div class="ch dk">&#10022; تسجيل تصريح بخور</div>
+    <div class="cb">
+      <div class="fg3" style="margin-bottom:9px">
+        <div class="fi"><label>رقم المحل</label><input type="text" id="bk_num" inputmode="numeric"></div>
+        <div class="fi"><label>اسم المحل</label><input type="text" id="bk_name"></div>
+        <div class="fi"><label>الطابق</label><select id="bk_floor"><option>GF</option><option>FF</option></select></div>
+        <div class="fi"><label>رقم التصريح</label><input type="text" id="bk_ref"></div>
+        <div class="fi"><label>جهة الإصدار</label><input type="text" id="bk_auth"></div>
+        <div class="fi"><label>تاريخ الإصدار</label><input type="date" id="bk_iss"></div>
+      </div>
+      <div class="fg">
+        <div class="fi"><label>تاريخ الانتهاء</label><input type="date" id="bk_exp"></div>
+        <div class="fi"><label>الحالة</label><select id="bk_st"><option value="active">ساري</option><option value="renew">قيد التجديد</option><option value="expired">منتهي</option><option value="suspended">موقوف</option></select></div>
+      </div>
+      <div class="sr"><button class="btn dk" style="background:#334155" onclick="saveBak()">&#10022; حفظ</button></div>
+    </div>
+  </div>
+  <div class="card"><div class="ch dk">&#128203; سجل تصاريح البخور</div><div class="cb"><div class="tw" id="bakList"></div></div></div>
+</div>
+
+<!-- ══════ PAGE: REPORTS ══════ -->
+<div class="pg" id="pg-rep">
+  <div class="pg-title"><div class="pg-title-left">&#128202; التقارير والتصدير</div></div>
+  <div class="report-box">
+    <div class="rb-title">&#128203; تقرير نهاية الشفت</div>
+    <div class="rb-sub">ملخص كامل جاهز للمشاركة على WhatsApp أو البريد</div>
+    <div class="report-preview" id="shiftReportText">اضغط "توليد التقرير" لإنشاء ملخص الشفت...</div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn a" style="flex:1" onclick="generateReport()">&#9889; توليد التقرير</button>
+      <button class="btn g" style="flex:1" onclick="copyReport()">&#128203; نسخ للمشاركة</button>
+    </div>
+  </div>
+  <div class="card"><div class="ch pur">&#128202; إحصائيات الشهر</div><div class="cb" id="monthStats"></div></div>
+  <div class="backup-box">
+    <div class="bb-icon">&#128190;</div>
+    <div class="bb-title">النسخة الاحتياطية</div>
+    <div class="bb-sub">احفظ نسخة من بياناتك أسبوعياً لحمايتها من الضياع</div>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button class="btn g" onclick="exportBackup()">&#128190; تصدير نسخة احتياطية</button>
+      <button class="btn outline" onclick="document.getElementById('importFile').click()">&#128228; استيراد نسخة</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:10px" id="lastBackupInfo"></div>
+  </div>
+  <div class="card"><div class="ch sky">&#128337; السجل التاريخي الكامل</div>
+    <div class="cb">
+      <div class="fg" style="margin-bottom:10px">
+        <div class="fi"><label>النوع</label>
+          <select id="h_f" onchange="renderHistory()">
+            <option value="all">الكل</option>
+            <option value="tour">جولة المعارض</option>
+            <option value="maint">الصيانة</option>
+            <option value="incidents">الحوادث</option>
+            <option value="tenants">المخالفات</option>
+            <option value="safety">السلامة</option>
+            <option value="contracts">العقود</option>
+            <option value="landscape">اللاندسكيب</option>
+            <option value="pest">Pest Control</option>
+            <option value="bakhoor">البخور</option>
+          </select>
+        </div>
+        <div class="fi"><label>التاريخ</label><input type="date" id="h_d" onchange="renderHistory()"></div>
+      </div>
+      <div class="tw" id="histList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <button class="bn on" onclick="showPage('dash',this)"><div class="ic">&#128204;</div><span>الرئيسية</span></button>
+  <button class="bn" onclick="showPage('actions',this)"><div class="ic">&#9889;</div><span>متابعة</span><div class="bn-badge" id="aiBadge" style="display:none">0</div></button>
+  <button class="bn" onclick="showPage('intel',this)"><div class="ic">&#128269;</div><span>تدقيق</span></button>
+  <button class="bn" onclick="showPage('zones',this)"><div class="ic">&#128205;</div><span>مناطق</span></button>
+  <button class="bn" onclick="showPage('plan',this)"><div class="ic">&#128197;</div><span>الشفت</span></button>
+  <button class="bn" onclick="showPage('tour',this)"><div class="ic">&#127939;</div><span>جولة</span></button>
+  <button class="bn" onclick="showPage('maint',this)"><div class="ic">&#128295;</div><span>صيانة</span></button>
+  <button class="bn" onclick="showPage('inc',this)"><div class="ic">&#128680;</div><span>حوادث</span></button>
+  <button class="bn" onclick="showPage('ten',this)"><div class="ic">&#127978;</div><span>مستأجرون</span></button>
+  <button class="bn" onclick="showPage('safe',this)"><div class="ic">&#128293;</div><span>سلامة</span></button>
+  <button class="bn" onclick="showPage('con',this)"><div class="ic">&#128196;</div><span>عقود</span></button>
+  <button class="bn" onclick="showPage('exp',this)"><div class="ic">&#9200;</div><span>منتهية</span></button>
+  <button class="bn" onclick="showPage('ls',this)"><div class="ic">&#127807;</div><span>لاندسكيب</span></button>
+  <button class="bn" onclick="showPage('pest',this)"><div class="ic">&#128027;</div><span>Pest</span></button>
+  <button class="bn" onclick="showPage('bak',this)"><div class="ic">&#10022;</div><span>بخور</span></button>
+  <button class="bn" onclick="showPage('rep',this)"><div class="ic">&#128202;</div><span>تقارير</span></button>
+</div>
+
+<div class="flash" id="FLASH"></div>
+<div class="toast" id="TOAST"></div>
+
+<script>
+var KEY='mall_ops_v6';
+var DB={maint:[],incidents:[],tenants:[],safety:[],contracts:[],landscape:[],pest:[],bakhoor:[],tour:[],plan:[],actionItems:[],zoneNotes:{}};
+try{var _s=JSON.parse(localStorage.getItem(KEY));if(_s)Object.keys(DB).forEach(function(k){if(_s[k]!==undefined)DB[k]=_s[k];});}catch(e){}
+
+// ─── CONSTANTS ───────────────────────────────────────────────────
+var ZONES_GF=['GF — مدخل رئيسي','GF — ممرات','GF — فود كورت','GF — دورات مياه','GF — مواقف'];
+var ZONES_FF=['FF — ممرات','FF — ترفيه','FF — دورات مياه'];
+var ZONES_ALL=ZONES_GF.concat(ZONES_FF).concat(['مشتركة — مصاعد','مشتركة — غرف تحكم']);
+var SYSTEMS=['HVAC التكييف','السلالم الكهربائية','المصاعد','الإنارة الرئيسية','إنارة الطوارئ','إنذار الحريق / Fire Panel','دورات المياه','كاميرات CCTV','نظام الإذاعة PA','المولدات الاحتياطية','بوابات المواقف','نظام التحكم بالدخول'];
+var CLEAN=['الممرات الرئيسية GF','الممرات الرئيسية FF','فود كورت','دورات المياه GF','دورات المياه FF','المداخل الرئيسية','مواقف السيارات','أسطح المحلات'];
+var PERIOD_LABELS={1:'الافتتاحية',2:'الذروة',3:'الإغلاق المبكر',4:'الإغلاق النهائي'};
+var PERIOD_COLS={1:'#0F2544',2:'#D97706',3:'#7C3AED',4:'#DC2626'};
+var TASKS=[
+  ['استلام الشفت — مراجعة تقرير الشفت السابق والبنود المعلقة','جولة افتتاحية شاملة — GF وFF','فحص الأنظمة الحيوية (HVAC، مصاعد، إنارة، Fire Panel)','التحقق من مخارج الطوارئ — GF وFF','فحص التزام المستأجرين بالدوام (GF وFF)','مراجعة بلاغات الصيانة المفتوحة','التنسيق مع فريق الأمن وتوزيع المهام','تقييم النظافة الافتتاحي — الممرات ودورات المياه'],
+  ['جولة مكثفة على مستأجري GF — رصد المخالفات','جولة مكثفة على مستأجري FF — رصد المخالفات','متابعة نظافة الممرات والفود كورت كل 30 دقيقة','مراقبة فود كورت — صحة وسلامة وضجيج','الاستجابة الفورية للحوادث والشكاوى','فحص طفايات الحريق في المناطق الحيوية','مراجعة تصاريح البخور النشطة (GF وFF)','متابعة أعمال الصيانة والمقاولين الجاريين'],
+  ['جولة مراقبة بدء إغلاق المحلات — GF','جولة مراقبة بدء إغلاق المحلات — FF','تسجيل المحلات المتأخرة في الإغلاق','فحص اللاندسكيب والمناطق الخارجية','مراجعة وترتيب أولويات بلاغات الصيانة','التحقق من تنفيذ جدول Pest Control','مراجعة تغطية كاميرات CCTV','تفتيش دورات المياه النهائي'],
+  ['جولة الإغلاق النهائية الشاملة — GF وFF','التحقق من إغلاق جميع المحلات والمداخل','فحص الأنظمة ووضعها على وضع الليل','التحقق من مخارج الطوارئ — مغلقة بشكل صحيح','إعداد التقرير اليومي الكامل','رفع جميع البنود المعلقة للشفت القادم','تسليم الشفت الرسمي والتوقيع']
+];
+var HEAT_WEIGHTS={incidents:0.25,maint:0.20,tenants:0.15,safety:0.15,contracts:0.15,clean:0.10};
+
+// ─── UTILITIES ───────────────────────────────────────────────────
+function saveDB(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){}}
+function v(id){var el=document.getElementById(id);return el?el.value:'';}
+function clrF(ids){ids.forEach(function(id){var el=document.getElementById(id);if(el)el.value='';})}
+function daysLeft(d){if(!d)return null;var dt=new Date(d),now=new Date();now.setHours(0,0,0,0);return Math.ceil((dt-now)/86400000);}
+function daysPill(dl){if(dl===null)return'';if(dl<0)return'<span class="dp dp-r">منتهي</span>';if(dl<=30)return'<span class="dp dp-r">'+dl+' يوم</span>';if(dl<=60)return'<span class="dp dp-o">'+dl+' يوم</span>';return'<span class="dp dp-g">'+dl+' يوم</span>';}
+function stBadge(s,map){if(!s)return'';var cl=map&&map[s]?map[s]:(s.includes('مفتوح')||s.includes('open')||s.includes('active')||s.includes('ساري')||s.includes('ok'))?'ok':(s.includes('done')||s.includes('مكتمل')||s.includes('ممتاز'))?'ok':'bw';return'<span class="bg_ '+cl+'">'+s+'</span>';}
+function mkTbl(heads,rows){if(!rows||!rows.length)return'<div class="empty">لا توجد سجلات</div>';return'<table class="rt"><tr>'+heads.map(function(h){return'<th>'+h+'</th>';}).join('')+'</tr>'+rows.join('')+'</table>';}
+function starsStr(r){var o='';for(var i=1;i<=5;i++)o+='<span style="color:'+(i<=r?'#F59E0B':'#ddd')+'">&#9733;</span>';return o;}
+function toast(msg,col){var el=document.getElementById('TOAST');el.textContent=msg;el.style.background=col||'var(--g)';el.classList.add('on');setTimeout(function(){el.classList.remove('on');},2000);}
+function flash(){var f=document.getElementById('FLASH');f.classList.add('on');setTimeout(function(){f.classList.remove('on');},250);}
+function today(){return new Date().toISOString().slice(0,10);}
+
+// ─── NAVIGATION ──────────────────────────────────────────────────
+var curPage='dash';
+function showPage(id,btn){
+  document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on');});
+  document.querySelectorAll('.bn').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('pg-'+id).classList.add('on');
+  if(btn)btn.classList.add('on');
+  curPage=id;
+  window.scrollTo(0,0);
+  var renders={dash:renderDash,actions:renderActions,intel:renderIntel,zones:renderZones,tour:function(){renderTourLog();updateTourKPI();},maint:renderMaint,inc:renderInc,ten:renderTen,safe:renderSafe,con:renderCon,exp:renderExpiring,ls:renderLs,pest:renderPest,bak:renderBak,rep:function(){renderHistory();renderMonthStats();}};
+  if(renders[id])renders[id]();
+  if(id==='plan')buildPeriodContent(curPeriod);
+}
+
+// ─── HEAT SCORE ──────────────────────────────────────────────────
+function calcHeat(){
+  var t=today();
+  var openInc=DB.incidents.filter(function(r){return r.ist==='open'||r.ist==='progress';}).length;
+  var openMaint=DB.maint.filter(function(r){return r.mst==='open';}).length;
+  var openTen=DB.tenants.filter(function(r){return r.tst==='open';}).length;
+  var badSafe=DB.safety.filter(function(r){return r.sfst==='expired'||r.sfst==='missing';}).length;
+  var expCon=DB.contracts.filter(function(r){var dl=daysLeft(r.end);return dl!==null&&dl<=30;}).length;
+  var incScore=Math.max(0,100-openInc*15);
+  var maintScore=Math.max(0,100-openMaint*8);
+  var tenScore=Math.max(0,100-openTen*10);
+  var safeScore=Math.max(0,100-badSafe*20);
+  var conScore=Math.max(0,100-expCon*15);
+  var cleanScore=85;
+  var heat=Math.round(incScore*HEAT_WEIGHTS.incidents+maintScore*HEAT_WEIGHTS.maint+tenScore*HEAT_WEIGHTS.tenants+safeScore*HEAT_WEIGHTS.safety+conScore*HEAT_WEIGHTS.contracts+cleanScore*HEAT_WEIGHTS.clean);
+  return{heat:heat,incScore:incScore,maintScore:maintScore,tenScore:tenScore,safeScore:safeScore,conScore:conScore,cleanScore:cleanScore};
+}
+function updateHeatUI(h){
+  var chip=document.getElementById('heatChip');
+  var sc=document.getElementById('hm-score');
+  var fill=document.getElementById('hm-fill');
+  var col=h.heat>=80?'var(--g)':h.heat>=60?'var(--w)':'var(--d)';
+  var cls=h.heat>=80?'heat-g':h.heat>=60?'heat-y':'heat-r';
+  if(chip){chip.textContent='♨ '+h.heat+'%';chip.className='heat-chip '+cls;}
+  if(sc){sc.textContent=h.heat+'%';sc.style.color=col;}
+  if(fill){fill.style.width=h.heat+'%';fill.style.background=col;}
+  var ind=document.getElementById('hm-indicators');
+  if(ind){
+    var items=[
+      {l:'حوادث',v:h.incScore,w:'25%'},{l:'صيانة',v:h.maintScore,w:'20%'},
+      {l:'مستأجرون',v:h.tenScore,w:'15%'},{l:'سلامة',v:h.safeScore,w:'15%'},
+      {l:'عقود',v:h.conScore,w:'15%'},{l:'نظافة',v:h.cleanScore,w:'10%'}
+    ];
+    ind.innerHTML=items.map(function(it){
+      var c=it.v>=80?'var(--g)':it.v>=60?'var(--w)':'var(--d)';
+      return'<div class="hm-ind"><div class="iv" style="color:'+c+'">'+it.v+'%</div><div class="il">'+it.l+' ('+it.w+')</div></div>';
+    }).join('');
+  }
+}
+
+// ─── DASHBOARD ───────────────────────────────────────────────────
+function renderDash(){
+  var h=calcHeat(); updateHeatUI(h);
+  var t=today();
+  var tours=DB.tour.filter(function(r){return r.ts&&r.ts.slice(0,10)===t;}).length;
+  var tI=DB.incidents.filter(function(r){return r.ts&&r.ts.slice(0,10)===t;}).length;
+  var tT=DB.tenants.filter(function(r){return r.ts&&r.ts.slice(0,10)===t;}).length;
+  var openM=DB.maint.filter(function(r){return r.mst==='open';}).length;
+  var badS=DB.safety.filter(function(r){return r.sfst==='expired'||r.sfst==='missing';}).length;
+  var expC=DB.contracts.filter(function(r){var dl=daysLeft(r.end);return dl!==null&&dl<=30;}).length;
+  var openAI=DB.actionItems.filter(function(r){return r.status!=='done';}).length;
+  document.getElementById('kpiGrid').innerHTML=
+    '<div class="kc blu"><div class="kv">'+tours+'</div><div class="kl">&#127978; جولة اليوم</div></div>'+
+    '<div class="kc '+(tI>0?'red':'grn')+'"><div class="kv">'+tI+'</div><div class="kl">&#128680; حوادث</div></div>'+
+    '<div class="kc '+(tT>0?'ora':'grn')+'"><div class="kv">'+tT+'</div><div class="kl">&#9888; مخالفات</div></div>'+
+    '<div class="kc '+(openM>0?'ora':'grn')+'"><div class="kv">'+openM+'</div><div class="kl">&#128295; صيانة مفتوح</div></div>'+
+    '<div class="kc '+(badS>0?'red':'grn')+'"><div class="kv">'+badS+'</div><div class="kl">&#128293; طفايات خطر</div></div>'+
+    '<div class="kc '+(openAI>0?'ora':'grn')+'"><div class="kv">'+openAI+'</div><div class="kl">&#9889; Action Items</div></div>';
+  // Alerts
+  var ah='';
+  if(badS>0)ah+='<div class="al r"><div><div class="at">'+badS+' معدة سلامة منتهية أو مفقودة</div><div class="as">إجراء فوري مطلوب</div></div></div>';
+  if(expC>0)ah+='<div class="al r"><div><div class="at">'+expC+' عقد أو رخصة تنتهي خلال 30 يوم</div><div class="as">راجع قسم المنتهية قريباً</div></div></div>';
+  DB.tenants.forEach(function(r){if((parseInt(r.twarn)||0)>=4&&r.tst==='open')ah+='<div class="al r"><div><div class="at">محل '+r.tnum+' — '+r.tname+' — '+r.tvtype+'</div><div class="as">إجراء: '+r.twarnLabel+'</div></div></div>';});
+  var overdueAI=DB.actionItems.filter(function(r){if(r.status==='done')return false;var dl=daysLeft(r.due);return dl!==null&&dl<0;});
+  if(overdueAI.length)ah+='<div class="al r"><div><div class="at">'+overdueAI.length+' بند متأخر عن موعده في Action Items</div></div></div>';
+  if(openM>10)ah+='<div class="al o"><div><div class="at">'+openM+' بلاغ صيانة مفتوح — أعلى من المعتاد</div></div></div>';
+  document.getElementById('alertsPanel').innerHTML=ah||'<div class="al g"><div><div class="at">&#10003; لا توجد تنبيهات حرجة اليوم</div></div></div>';
+  // Zone grid
+  renderZoneGrid();
+  // Worst 5
+  renderWorst5();
+  // Week compare
+  renderWeekCompare();
+}
+function renderZoneGrid(){
+  var el=document.getElementById('zoneGrid');if(!el)return;
+  var allZones=[{name:'GF',label:'الطابق الأرضي',cls:'gf'},{name:'FF',label:'الطابق الأول',cls:'ff'}];
+  el.innerHTML=allZones.map(function(z){
+    var zInc=DB.incidents.filter(function(r){return r.izone&&r.izone.startsWith(z.name);}).length;
+    var zMaint=DB.maint.filter(function(r){return r.mzone&&r.mzone.startsWith(z.name);}).length;
+    var zViol=DB.tenants.filter(function(r){return r.tfloor===z.name;}).length;
+    var zTour=DB.tour.filter(function(r){return r.ts&&r.ts.slice(0,10)===today();}).length;
+    return'<div class="zone-card '+z.cls+'"><div class="zone-name">'+z.name+' — '+z.label+'</div>'+
+      '<div class="zone-stat"><span>&#128680; حوادث</span><span class="zv '+(zInc>0?'red':'grn')+'">'+zInc+'</span></div>'+
+      '<div class="zone-stat"><span>&#9888; مخالفات</span><span class="zv '+(zViol>0?'ora':'grn')+'">'+zViol+'</span></div>'+
+      '<div class="zone-stat"><span>&#128295; بلاغات</span><span class="zv '+(zMaint>0?'ora':'grn')+'">'+zMaint+'</span></div>'+
+      '<div class="zone-stat"><span>&#127939; زيارات اليوم</span><span class="zv blu">'+zTour+'</span></div></div>';
+  }).join('');
+}
+function renderWorst5(){
+  var el=document.getElementById('worst5Panel');if(!el)return;
+  var shopMap={};
+  DB.tenants.forEach(function(r){if(!shopMap[r.tnum])shopMap[r.tnum]={num:r.tnum,name:r.tname,floor:r.tfloor,violations:0,score:0};shopMap[r.tnum].violations++;});
+  DB.tour.forEach(function(r){if(!shopMap[r.num])shopMap[r.num]={num:r.num,name:r.name,floor:'',violations:0,score:0};if(r.rating)shopMap[r.num].score+=r.rating;});
+  var shops=Object.values(shopMap).sort(function(a,b){return b.violations-a.violations||a.score-b.score;}).slice(0,5);
+  if(!shops.length){el.innerHTML='<div class="empty">لا توجد بيانات كافية</div>';return;}
+  el.innerHTML='<table class="rt"><tr><th>المعرض</th><th>الطابق</th><th>المخالفات</th><th>التصنيف</th></tr>'+
+    shops.map(function(s){
+      var grade=s.violations>=5?'F':s.violations>=4?'D':s.violations>=3?'C':s.violations>=2?'B':'A';
+      return'<tr><td><strong>'+s.num+'</strong> '+s.name+'</td><td>'+s.floor+'</td><td style="color:var(--d);font-weight:800">'+s.violations+'</td><td><span class="sp-grade gr-'+grade+'">'+grade+'</span></td></tr>';
+    }).join('')+'</table>';
+}
+function renderWeekCompare(){
+  var el=document.getElementById('weekCompare');if(!el)return;
+  var now=new Date();
+  function getWeekData(daysBack){
+    var start=new Date(now);start.setDate(start.getDate()-daysBack-6);
+    var end=new Date(now);end.setDate(end.getDate()-daysBack);
+    var s=start.toISOString().slice(0,10),e=end.toISOString().slice(0,10);
+    return{inc:DB.incidents.filter(function(r){return r.ts&&r.ts.slice(0,10)>=s&&r.ts.slice(0,10)<=e;}).length,viol:DB.tenants.filter(function(r){return r.ts&&r.ts.slice(0,10)>=s&&r.ts.slice(0,10)<=e;}).length,tours:DB.tour.filter(function(r){return r.ts&&r.ts.slice(0,10)>=s&&r.ts.slice(0,10)<=e;}).length};
+  }
+  var thisWeek=getWeekData(0),lastWeek=getWeekData(7);
+  var rows=[{l:'الحوادث',t:thisWeek.inc,lw:lastWeek.inc},{l:'المخالفات',t:thisWeek.viol,lw:lastWeek.viol},{l:'زيارات المعارض',t:thisWeek.tours,lw:lastWeek.tours}];
+  var max=Math.max.apply(null,rows.map(function(r){return Math.max(r.t,r.lw,1);}));
+  el.innerHTML=rows.map(function(r){
+    var pctT=Math.round(r.t/max*100),pctL=Math.round(r.lw/max*100);
+    return'<div style="margin-bottom:12px"><div style="font-size:12px;font-weight:700;color:var(--p);margin-bottom:5px">'+r.l+'</div>'+
+      '<div class="comparison-row"><div class="cr-label" style="font-size:10px">هذا الأسبوع</div><div class="cr-bar-track"><div class="cr-bar-fill" style="width:'+pctT+'%;background:var(--a)"></div></div><div class="cr-val">'+r.t+'</div></div>'+
+      '<div class="comparison-row"><div class="cr-label" style="font-size:10px;color:var(--muted)">الأسبوع الماضي</div><div class="cr-bar-track"><div class="cr-bar-fill" style="width:'+pctL+'%;background:var(--border)"></div></div><div class="cr-val" style="color:var(--muted)">'+r.lw+'</div></div></div>';
+  }).join('');
+}
+
+// ─── ACTION ITEMS ────────────────────────────────────────────────
+var aiFilter='all';
+function setAIFilter(btn){aiFilter=btn.getAttribute('data-filter');document.querySelectorAll('#pg-actions .fb').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');renderActions();}
+function addActionItem(){
+  var title=v('ai_title');if(!title){toast('أدخل عنوان البند','var(--d)');return;}
+  DB.actionItems.push({id:Date.now(),title:title,type:v('ai_type'),owner:v('ai_owner'),due:v('ai_due'),status:'open',ts:new Date().toISOString(),source:'manual'});
+  saveDB();clrF(['ai_title','ai_owner','ai_due']);renderActions();updateAIBadge();toast('✅ تم إضافة البند','var(--g)');
+}
+function closeAI(id){
+  var item=DB.actionItems.find(function(r){return r.id===id;});
+  if(item){item.status='done';item.closedAt=new Date().toISOString();}
+  saveDB();renderActions();updateAIBadge();renderDash();toast('✅ تم إغلاق البند','var(--g)');
+}
+function updateAIBadge(){
+  var open=DB.actionItems.filter(function(r){return r.status!=='done';}).length;
+  var badge=document.getElementById('aiBadge');
+  if(badge){badge.style.display=open>0?'block':'none';badge.textContent=open;}
+  var cnt=document.getElementById('aiCount');if(cnt)cnt.textContent=open+' بند مفتوح';
+}
+function renderActions(){
+  var data=DB.actionItems.slice().reverse();
+  if(aiFilter==='overdue')data=data.filter(function(r){if(r.status==='done')return false;var dl=daysLeft(r.due);return dl!==null&&dl<0;});
+  else if(aiFilter!=='all')data=data.filter(function(r){return r.type===aiFilter;});
+  data=data.filter(function(r){return r.status!=='done'||(aiFilter==='all'&&data.length<50);});
+  var el=document.getElementById('actionItemsList');if(!el)return;
+  if(!data.length){el.innerHTML='<div class="empty">&#9989; لا توجد بنود مفتوحة</div>';return;}
+  el.innerHTML='';
+  data.forEach(function(r){
+    var dl=r.due?daysLeft(r.due):null;
+    var cls=dl===null?'ai-grn':dl<0?'ai-red':dl<=2?'ai-red':dl<=5?'ai-ora':'ai-grn';
+    var daysTxt=dl===null?'':dl<0?'متأخر '+Math.abs(dl)+' يوم':dl===0?'ينتهي اليوم':dl+' يوم متبقي';
+    var daysCls=dl===null?'grn':dl<0?'red':dl<=5?'ora':'grn';
+    var typeIcons={maint:'🔧',incident:'🚨',tenant:'🏪',safety:'🔥',other:'📋'};
+    var item=document.createElement('div');
+    item.className='ai-item '+cls;
+    item.innerHTML='<div style="font-size:18px">'+(typeIcons[r.type]||'📋')+'</div><div class="ai-left"><div class="ai-title">'+r.title+'</div><div class="ai-meta"><span>'+r.type+'</span>'+(r.owner?'<span>&#128100; '+r.owner+'</span>':'')+'<span class="ai-days '+daysCls+'">'+daysTxt+'</span></div></div>';
+    if(r.status!=='done'){var cb=document.createElement('button');cb.className='ai-close-btn';cb.textContent='✓ إغلاق';cb.addEventListener('click',(function(id){return function(){closeAI(id);};})(r.id));item.appendChild(cb);}
+    el.appendChild(item);
+  });
+}
+function autoCreateAI(title,type,owner,dueDate){
+  DB.actionItems.push({id:Date.now(),title:title,type:type,owner:owner||'',due:dueDate||'',status:'open',ts:new Date().toISOString(),source:'auto'});
+  updateAIBadge();
+}
+
+// ─── SHOP INTEL ──────────────────────────────────────────────────
+function searchShop(){
+  var num=v('si_num').trim();
+  if(!num){renderIntel();return;}
+  var tours=DB.tour.filter(function(r){return r.num===num;});
+  var viols=DB.tenants.filter(function(r){return r.tnum===num;});
+  var el=document.getElementById('shopProfile');
+  if(!tours.length&&!viols.length){el.innerHTML='<div class="empty">لا توجد بيانات للمعرض رقم '+num+'</div>';return;}
+  var name=tours.length?tours[tours.length-1].name:(viols.length?viols[0].tname:'');
+  var floor=viols.length?viols[0].tfloor:'';
+  var avgRating=0;var ratedTours=tours.filter(function(r){return r.rating>0;});
+  if(ratedTours.length)avgRating=Math.round(ratedTours.reduce(function(a,b){return a+b.rating;},0)/ratedTours.length*10)/10;
+  var grade=viols.length>=5?'F':viols.length>=4?'D':viols.length>=3?'C':viols.length>=2?'B':'A';
+  var closedViols=viols.filter(function(r){return r.ts;}).map(function(r){return r.ts.slice(0,10);});
+  var recentViols=closedViols.filter(function(d){var dl=daysLeft(d);return dl>=0&&dl<=30;}).length;
+  var hasAlert=recentViols>=3||viols.length>=5;
+  el.innerHTML='<div class="shop-profile">'+
+    '<div class="sp-header"><div><div class="sp-num">'+num+'</div><div class="sp-name">'+(name||'معرض '+num)+'</div><div class="sp-floor">'+(floor||'')+'</div></div>'+
+    '<span class="sp-grade gr-'+grade+'">'+grade+'</span></div>'+
+    (hasAlert?'<div class="alert-box">&#9888; تنبيه: '+recentViols+' مخالفات في آخر 30 يوم — معرض عالي المخاطر</div>':'')+
+    '<div class="sp-stats"><div class="sp-stat"><div class="sv">'+tours.length+'</div><div class="sl">زيارة</div></div>'+
+    '<div class="sp-stat"><div class="sv" style="color:'+(viols.length>0?'var(--d)':'var(--g)')+'">'+viols.length+'</div><div class="sl">مخالفة</div></div>'+
+    '<div class="sp-stat"><div class="sv" style="color:var(--w)">'+(avgRating||'—')+'</div><div class="sl">متوسط نجوم</div></div>'+
+    '<div class="sp-stat"><div class="sv" style="color:var(--d)">'+recentViols+'</div><div class="sl">30 يوم أخير</div></div></div>'+
+    '<div style="margin-bottom:4px;font-size:12px;font-weight:700;color:var(--muted)">اتجاه الدرجات — آخر 10 زيارات</div>'+
+    (tours.length?'<div class="trend-bar">'+tours.slice(-10).map(function(t){var h=t.rating?Math.round(t.rating/5*100):20;var col=t.rating>=4?'var(--g)':t.rating>=3?'var(--w)':'var(--d)';return'<div class="tb-bar" style="height:'+h+'%;background:'+col+'"></div>';}).join('')+'</div><div class="trend-label">&#8592; الأحدث</div>':'<div style="font-size:12px;color:var(--muted)">لا توجد بيانات كافية</div>')+
+    (viols.length?'<div style="margin-top:10px"><div style="font-size:12px;font-weight:700;color:var(--p);margin-bottom:6px">&#128203; سجل المخالفات</div>'+
+    mkTbl(['التاريخ','المخالفة','الإجراء'],viols.slice().reverse().map(function(r){return'<tr><td>'+(r.ts?r.ts.slice(0,10):'')+'</td><td>'+r.tvtype+'</td><td>'+r.twarnLabel+'</td></tr>';}))+'</div>':'')+
+    '</div>';
+}
+function renderIntel(){
+  var shopMap={};
+  DB.tenants.forEach(function(r){if(!shopMap[r.tnum])shopMap[r.tnum]={num:r.tnum,name:r.tname,floor:r.tfloor,violations:0,score:0,ratedCount:0};shopMap[r.tnum].violations++;});
+  DB.tour.forEach(function(r){if(!shopMap[r.num])shopMap[r.num]={num:r.num,name:r.name,floor:'',violations:0,score:0,ratedCount:0};if(r.rating){shopMap[r.num].score+=r.rating;shopMap[r.num].ratedCount++;}});
+  var shops=Object.values(shopMap);
+  var el=document.getElementById('shopRanking');if(!el)return;
+  if(!shops.length){el.innerHTML='<div class="empty">لا توجد بيانات معارض بعد</div>';return;}
+  shops.sort(function(a,b){return b.violations-a.violations||a.score-b.score;});
+  var rows=shops.slice(0,20).map(function(s){
+    var avg=s.ratedCount?Math.round(s.score/s.ratedCount*10)/10:0;
+    var grade=s.violations>=5?'F':s.violations>=4?'D':s.violations>=3?'C':s.violations>=2?'B':'A';
+    return'<tr><td><strong>'+s.num+'</strong> '+(s.name||'')+'</td><td>'+s.floor+'</td><td style="font-weight:800;color:var(--d)">'+s.violations+'</td><td>'+(avg?'<span style="color:var(--w)">'+avg+' &#9733;</span>':'—')+'</td><td><span class="sp-grade gr-'+grade+'">'+grade+'</span></td></tr>';
+  });
+  el.innerHTML=mkTbl(['المعرض','الطابق','مخالفات','متوسط نجوم','تصنيف'],rows);
+}
+
+// ─── ZONES ───────────────────────────────────────────────────────
+function renderZones(){
+  renderZoneDetail('gfZones',ZONES_GF,'GF');
+  renderZoneDetail('ffZones',ZONES_FF,'FF');
+}
+function renderZoneDetail(elId,zones,floor){
+  var el=document.getElementById(elId);if(!el)return;
+  el.innerHTML=zones.map(function(zone){
+    var inc=DB.incidents.filter(function(r){return r.izone===zone;}).length;
+    var maint=DB.maint.filter(function(r){return r.mzone===zone;}).length;
+    var viol=DB.tenants.filter(function(r){return r.tfloor===floor;}).length;
+    return'<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">'+
+      '<div style="font-size:13px;font-weight:600">'+zone+'</div>'+
+      '<div style="display:flex;gap:8px;font-size:11px">'+
+      '<span style="color:'+(inc>0?'var(--d)':'var(--muted)')+'">&#128680; '+inc+'</span>'+
+      '<span style="color:'+(maint>0?'var(--w)':'var(--muted)')+'">&#128295; '+maint+'</span>'+
+      '<span style="color:'+(viol>0?'var(--w)':'var(--muted)')+'">&#9888; '+viol+'</span>'+
+      '</div></div>';
+  }).join('');
+}
+function saveZoneNote(floor){
+  var note=v(floor.toLowerCase()+'_note');
+  if(!DB.zoneNotes)DB.zoneNotes={};
+  DB.zoneNotes[floor]={note:note,ts:new Date().toISOString()};
+  saveDB();toast('✅ تم حفظ الملاحظة','var(--g)');
+}
+
+// ─── SHIFT PLAN ──────────────────────────────────────────────────
+var curPeriod=0,ckState={};
+function showPeriod(idx,btn){curPeriod=idx;document.querySelectorAll('#planTabs .ptab').forEach(function(b){b.classList.remove('on');});if(btn)btn.classList.add('on');buildPeriodContent(idx);}
+function buildPeriodContent(idx){
+  var bgs=['ph1','ph2','ph3','ph4'];
+  var times=['4:00 — 6:00 م','6:00 — 9:00 م','9:00 — 11:00 م','11:00 م — 12:00 ص'];
+  var icons=['🌅','🏙️','🌆','🌙'];
+  var titles=['الافتتاحية — استلام الشفت','ذروة الزيارات','بدء الإغلاق','الإغلاق النهائي'];
+  var done=TASKS[idx].filter(function(t,i){return ckState['ck_'+idx+'_'+i];}).length;
+  var el=document.getElementById('periodContent');if(!el)return;
+  el.innerHTML='<div class="period-hdr-bar '+bgs[idx]+'"><div><div style="font-size:16px;font-weight:800">'+icons[idx]+' '+titles[idx]+'</div><div style="font-size:11px;opacity:.8;margin-top:2px">'+times[idx]+'</div></div><div style="font-size:13px;font-weight:800">'+done+'/'+TASKS[idx].length+'</div></div>';
+  var cont=document.createElement('div');
+  TASKS[idx].forEach(function(t,i){
+    var ckId='ck_'+idx+'_'+i;var isDone=!!ckState[ckId];
+    var item=document.createElement('div');item.className='task-item'+(isDone?' done':'');
+    var cb=document.createElement('input');cb.type='checkbox';cb.checked=isDone;
+    cb.addEventListener('change',(function(cid,pidx){return function(){ckState[cid]=this.checked;buildPeriodContent(pidx);};})(ckId,idx));
+    var txt=document.createElement('div');txt.className='task-text'+(isDone?' done':'');txt.textContent=t;
+    item.appendChild(cb);item.appendChild(txt);cont.appendChild(item);
+  });
+  el.appendChild(cont);
+  // Systems grid for periods 0 and 3
+  if(idx===0||idx===3){
+    var sCard=document.createElement('div');sCard.className='card';sCard.style.marginTop='10px';
+    sCard.innerHTML='<div class="ch a">&#9881;&#65039; فحص الأنظمة الحيوية — '+['GF وFF','','','نهاية الشفت'][idx]+'</div><div class="cb"><div class="sgrid" id="sysGrid_'+idx+'"></div></div>';
+    el.appendChild(sCard);setTimeout(function(){buildSysGrid('sysGrid_'+idx);},10);
+  }
+  // Clean grid
+  var cCard=document.createElement('div');cCard.className='card';cCard.style.marginTop='10px';
+  cCard.innerHTML='<div class="ch g">&#129529; تقييم النظافة</div><div class="cb"><div class="sgrid" id="cleanGrid_'+idx+'"></div></div>';
+  el.appendChild(cCard);setTimeout(function(){buildCleanGrid('cleanGrid_'+idx);},10);
+  // Notes
+  var nCard=document.createElement('div');nCard.className='card';nCard.style.marginTop='10px';
+  nCard.innerHTML='<div class="ch p">&#128203; ملاحظات الفترة</div><div class="cb"><div class="fi"><textarea id="pnotes_'+idx+'" placeholder="ملاحظات هذه الفترة..."></textarea></div></div>';
+  el.appendChild(nCard);
+}
+function buildSysGrid(elId){var el=document.getElementById(elId);if(!el)return;el.innerHTML='';SYSTEMS.forEach(function(s,i){var d=document.createElement('div');d.className='si';var nm=document.createElement('span');nm.className='sn';nm.textContent=s;var sel=document.createElement('select');sel.id=elId+'_'+i;['✅ يعمل','⚠️ جزئي','❌ معطل'].forEach(function(o){var op=document.createElement('option');op.textContent=o;sel.appendChild(op);});d.appendChild(nm);d.appendChild(sel);el.appendChild(d);});}
+function buildCleanGrid(elId){var el=document.getElementById(elId);if(!el)return;el.innerHTML='';CLEAN.forEach(function(a,i){var d=document.createElement('div');d.className='si';var nm=document.createElement('span');nm.className='sn';nm.textContent=a;var sel=document.createElement('select');sel.id=elId+'_'+i;['5 ممتاز','4 جيد','3 مقبول','2 ضعيف','1 سيء'].forEach(function(o){var op=document.createElement('option');op.textContent=o;sel.appendChild(op);});d.appendChild(nm);d.appendChild(sel);el.appendChild(d);});}
+function savePlan(){DB.plan.push({id:Date.now(),date:v('pl_date'),by:v('pl_by'),status:v('pl_status'),ts:new Date().toISOString()});saveDB();toast('✅ تم حفظ الشفت','var(--g)');}
+
+// ─── TOUR ────────────────────────────────────────────────────────
+var tourPeriod=1,tourRating=0,tourFlags={},tourFilter='all';
+function buildTourStars(){var sr=document.getElementById('tourStars');if(!sr)return;sr.innerHTML='';for(var i=1;i<=5;i++){var s=document.createElement('span');s.className='star';s.textContent='★';s.setAttribute('data-v',i);s.onclick=(function(val){return function(){tourRating=tourRating===val?0:val;document.querySelectorAll('#tourStars .star').forEach(function(st,idx){st.classList.toggle('on',idx<tourRating);});};})(i);sr.appendChild(s);}}
+function setTourPeriod(p,btn){tourPeriod=p;document.querySelectorAll('#tourTabs .ptab').forEach(function(b){b.classList.remove('on');});if(btn)btn.classList.add('on');var lbl=document.getElementById('tourPLbl');if(lbl)lbl.textContent=PERIOD_LABELS[p];}
+function toggleFlag(btn){var f=btn.getAttribute('data-flag');if(f==='ok'){var was=tourFlags.ok;tourFlags={};if(!was)tourFlags.ok=true;}else{delete tourFlags.ok;if(tourFlags[f])delete tourFlags[f];else tourFlags[f]=true;}document.querySelectorAll('.fb2').forEach(function(b){b.classList.toggle('on',!!tourFlags[b.getAttribute('data-flag')]);});}
+function saveTour(){
+  var num=document.getElementById('tr_num').value.trim();
+  if(!num){document.getElementById('tr_num').style.borderColor='var(--d)';setTimeout(function(){document.getElementById('tr_num').style.borderColor='';},800);return;}
+  var name=document.getElementById('tr_name').value.trim();
+  DB.tour.push({id:Date.now(),num:num,name:name,period:tourPeriod,rating:tourRating,flags:Object.assign({},tourFlags),note:document.getElementById('tr_note').value.trim(),time:new Date().toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'}),ts:new Date().toISOString()});
+  saveDB();flash();
+  var hasIssue=Object.keys(tourFlags).some(function(f){return f!=='ok'&&tourFlags[f];});
+  if(hasIssue){var issueTypes=Object.keys(tourFlags).filter(function(f){return f!=='ok'&&tourFlags[f];});autoCreateAI('معرض '+num+(name?' — '+name:'')+' — '+issueTypes.join('، '),'tenant','',new Date(Date.now()+2*86400000).toISOString().slice(0,10));}
+  document.getElementById('tr_num').value='';document.getElementById('tr_name').value='';document.getElementById('tr_note').value='';
+  tourRating=0;tourFlags={};buildTourStars();document.querySelectorAll('.fb2').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('tr_num').focus();
+  var cnt=document.getElementById('tourCount');if(cnt)cnt.textContent=DB.tour.filter(function(r){return r.ts&&r.ts.slice(0,10)===today();}).length+' زيارة';
+  updateTourKPI();renderTourLog();
+  toast((hasIssue?'⚠️ ':' ✅ ')+num+(name?' — '+name:''),hasIssue?'var(--w)':'var(--g)');
+}
+function setTourFilter(btn){tourFilter=btn.getAttribute('data-filter');document.querySelectorAll('#pg-tour .fb').forEach(function(b){b.classList.remove('on');});btn.classList.add('on');renderTourLog();}
+function renderTourLog(){
+  var data=DB.tour.slice().reverse();
+  if(tourFilter!=='all')data=data.filter(function(r){return r.flags[tourFilter];});
+  var el=document.getElementById('tourLog');if(!el)return;
+  el.innerHTML='';
+  if(!data.length){el.innerHTML='<div class="empty">ابدأ بتسجيل أول معرض ↑</div>';return;}
+  var grouped={};data.forEach(function(r){if(!grouped[r.period])grouped[r.period]=[];grouped[r.period].push(r);});
+  [4,3,2,1].forEach(function(p){
+    if(!grouped[p])return;
+    var hdr=document.createElement('div');hdr.className='sec-hdr';hdr.style.color=PERIOD_COLS[p];hdr.textContent=PERIOD_LABELS[p]+' ('+grouped[p].length+')';el.appendChild(hdr);
+    grouped[p].forEach(function(r){
+      var item=document.createElement('div');item.className='vli';
+      var top=document.createElement('div');top.className='vli-top';
+      var num=document.createElement('div');num.className='vli-num';num.textContent=r.num;top.appendChild(num);
+      if(r.name){var nm=document.createElement('div');nm.className='vli-name';nm.textContent=r.name;top.appendChild(nm);}
+      if(r.rating){var st=document.createElement('div');st.className='vli-stars';st.innerHTML=starsStr(r.rating);top.appendChild(st);}
+      var tm=document.createElement('span');tm.style.cssText='font-size:10px;color:var(--muted);margin-right:auto';tm.textContent=r.time;top.appendChild(tm);
+      var db=document.createElement('button');db.className='delbtn';db.textContent='✕';db.addEventListener('click',(function(rid){return function(){DB.tour=DB.tour.filter(function(x){return x.id!==rid;});saveDB();renderTourLog();updateTourKPI();toast('حذف','#555');};})(r.id));top.appendChild(db);
+      item.appendChild(top);
+      var flags=Object.keys(r.flags).filter(function(f){return r.flags[f]&&f!=='ok';});
+      if(flags.length){var fl=document.createElement('div');fl.className='vli-flags';var FLCLS={close:'vf-r',viol:'vf-o',maint:'vf-b',safe:'vf-r',bakhoor:'vf-p'};var FLLBL={close:'مغلق',viol:'مخالفة',maint:'صيانة',safe:'سلامة',bakhoor:'بخور'};flags.forEach(function(f){var sp=document.createElement('span');sp.className='vf '+(FLCLS[f]||'');sp.textContent=FLLBL[f]||f;fl.appendChild(sp);});item.appendChild(fl);}
+      if(r.note){var nt=document.createElement('div');nt.className='vli-note';nt.textContent=r.note;item.appendChild(nt);}
+      el.appendChild(item);
+    });
+  });
+}
+function updateTourKPI(){
+  var t=DB.tour.length;var c=DB.tour.filter(function(r){return r.flags.close;}).length;var vv=DB.tour.filter(function(r){return r.flags.viol;}).length;var rs=DB.tour.filter(function(r){return r.rating>0;});var avg=rs.length?Math.round(rs.reduce(function(a,b){return a+b.rating;},0)/rs.length*10)/10:0;
+  var el=document.getElementById('tourKPI');if(!el)return;
+  el.innerHTML='<div class="kc blu"><div class="kv">'+t+'</div><div class="kl">إجمالي</div></div><div class="kc '+(c?'red':'grn')+'"><div class="kv">'+c+'</div><div class="kl">&#10007; مغلق</div></div><div class="kc '+(vv?'ora':'grn')+'"><div class="kv">'+vv+'</div><div class="kl">&#9888; مخالفة</div></div><div class="kc '+(avg>0&&avg<3?'red':avg>=4?'grn':'ora')+'"><div class="kv">'+(avg||'—')+'</div><div class="kl">&#9733; متوسط</div></div>';
+}
+
+// ─── SAVE FUNCTIONS ──────────────────────────────────────────────
+function saveMaint(){
+  var due=v('m_due');
+  DB.maint.push({id:Date.now(),mtype:v('m_type'),mzone:v('m_zone'),pri:v('m_pri'),con:v('m_con'),cost:v('m_cost'),mst:v('m_st'),due:due,desc:v('m_desc'),ts:new Date().toISOString()});
+  if(v('m_st')==='open')autoCreateAI(v('m_type')+' — '+v('m_zone')+': '+v('m_desc').slice(0,40),'maint',v('m_con'),due);
+  saveDB();clrF(['m_loc','m_con','m_cost','m_desc','m_due']);renderMaint();renderDash();updateAIBadge();toast('✅ تم حفظ البلاغ','var(--p)');
+}
+function saveInc(){
+  var due=new Date(Date.now()+3*86400000).toISOString().slice(0,10);
+  DB.incidents.push({id:Date.now(),itype:v('i_type'),date:v('i_date'),izone:v('i_zone'),sev:v('i_sev'),own:v('i_own'),ist:v('i_st'),det:v('i_det'),act:v('i_act'),ts:new Date().toISOString()});
+  if(v('i_st')==='open'||v('i_st')==='progress')autoCreateAI(v('i_type')+' — '+v('i_zone')+' (خطورة: '+['','منخفض','متوسط','عالي','حرج'][parseInt(v('i_sev'))||1]+')'+'incident',v('i_own'),due);
+  saveDB();clrF(['i_loc','i_det','i_act','i_own']);renderInc();renderDash();updateAIBadge();toast('🚨 تم التسجيل','var(--d)');
+}
+function saveTenant(){
+  var warn=v('t_warn');var warnLabels={'1':'تنبيه شفهي','2':'إنذار أول','3':'إنذار ثاني','4':'غرامة','5':'إغلاق'};
+  DB.tenants.push({id:Date.now(),tnum:v('t_num'),tname:v('t_name'),tfloor:v('t_floor'),tvtype:v('t_type'),twarn:warn,twarnLabel:warnLabels[warn]||warn,tst:v('t_st'),tdet:v('t_det'),ts:new Date().toISOString()});
+  if(parseInt(warn)>=2&&v('t_st')==='open')autoCreateAI('مخالفة: محل '+v('t_num')+' — '+v('t_name')+' — '+v('t_type'),'tenant','',new Date(Date.now()+2*86400000).toISOString().slice(0,10));
+  saveDB();clrF(['t_num','t_name','t_det']);renderTen();renderDash();updateAIBadge();toast('✅ تم التسجيل','var(--w)');
+}
+function saveSafety(){
+  DB.safety.push({id:Date.now(),sfnum:v('sf_num'),sfzone:v('sf_zone'),sfty:v('sf_ty'),sfst:v('sf_st'),exp:v('sf_exp'),ins:v('sf_ins'),ts:new Date().toISOString()});
+  if(v('sf_st')==='expired'||v('sf_st')==='missing')autoCreateAI('معدة سلامة: '+v('sf_num')+' — '+v('sf_ty')+' ('+v('sf_st')+')'+'safety','',v('sf_exp'));
+  saveDB();clrF(['sf_num','sf_ins']);renderSafe();renderExpiring();renderDash();updateAIBadge();toast('🔥 تم الحفظ','var(--d)');
+}
+function saveContract(){DB.contracts.push({id:Date.now(),ctype:v('c_type'),cname:v('c_name'),ref:v('c_ref'),start:v('c_start'),end:v('c_end'),val:v('c_val'),cst:v('c_st'),notes:v('c_notes'),ts:new Date().toISOString()});saveDB();clrF(['c_name','c_ref','c_start','c_end','c_val','c_notes']);renderCon();renderExpiring();renderDash();toast('✅ تم الحفظ','var(--pur)');}
+function saveLs(){DB.landscape.push({id:Date.now(),lszone:v('ls_zone'),ltype:v('ls_type'),con:v('ls_con'),date:v('ls_date'),next:v('ls_next'),lst:v('ls_st'),notes:v('ls_notes'),ts:new Date().toISOString()});saveDB();clrF(['ls_con','ls_notes']);renderLs();toast('🌿 تم الحفظ','var(--g)');}
+function savePest(){DB.pest.push({id:Date.now(),ptype:v('pc_type'),pzone:v('pc_zone'),con:v('pc_con'),date:v('pc_date'),next:v('pc_next'),mat:v('pc_mat'),ts:new Date().toISOString()});saveDB();clrF(['pc_con','pc_mat']);renderPest();toast('🐛 تم الحفظ','var(--tl)');}
+function saveBak(){DB.bakhoor.push({id:Date.now(),bknum:v('bk_num'),bkname:v('bk_name'),bkfloor:v('bk_floor'),bkref:v('bk_ref'),bkauth:v('bk_auth'),bkiss:v('bk_iss'),bkexp:v('bk_exp'),bkst:v('bk_st'),ts:new Date().toISOString()});saveDB();clrF(['bk_num','bk_name','bk_ref','bk_auth','bk_iss']);renderBak();renderExpiring();renderDash();toast('✅ تم الحفظ','#334155');}
+
+// ─── RENDER FUNCTIONS ────────────────────────────────────────────
+function delRec(cat,id){DB[cat]=DB[cat].filter(function(r){return r.id!==id;});saveDB();renderAll();toast('حذف','#555');}
+
+function mkRow(cells, cat, id) {
+  var delBtn = '<button class="btn d sm" data-cat="'+cat+'" data-id="'+id+'" onclick="delByAttr(this)">حذف</button>';
+  return '<tr>' + cells.map(function(c){return '<td>'+c+'</td>';}).join('') + '<td>'+delBtn+'</td></tr>';
+}
+function delByAttr(btn) {
+  var cat = btn.getAttribute('data-cat');
+  var id = parseInt(btn.getAttribute('data-id'));
+  DB[cat] = DB[cat].filter(function(r){return r.id !== id;});
+  saveDB(); renderAll(); toast('حذف','#555');
+}
+function renderMaint(){var r=DB.maint.slice().reverse().map(function(x){return mkRow([x.mtype,x.mzone,x.pri,stBadge(x.mst),x.due],'maint',x.id);});document.getElementById('maintList').innerHTML=mkTbl(['النوع','المنطقة','الأولوية','الحالة','الإنجاز',''],r);}
+function renderInc(){var r=DB.incidents.slice().reverse().map(function(x){var sc=parseInt(x.sev)>=3?'bd':parseInt(x.sev)===2?'bw':'ok';var sevLbl=['','منخفض','متوسط','عالي','حرج'][parseInt(x.sev)||1];return mkRow([x.date.replace('T',' ').slice(0,16),x.itype,x.izone,'<span class="bg_ '+sc+'">'+sevLbl+'</span>',stBadge(x.ist)],'incidents',x.id);});document.getElementById('incList').innerHTML=mkTbl(['التاريخ','النوع','المنطقة','الخطورة','الحالة',''],r);}
+function renderTen(){var r=DB.tenants.slice().reverse().map(function(x){var wc=parseInt(x.twarn)>=4?'bd':parseInt(x.twarn)>=3?'bw':'ok';return mkRow([x.tnum,x.tname,x.tfloor,x.tvtype,'<span class="bg_ '+wc+'">'+x.twarnLabel+'</span>',stBadge(x.tst)],'tenants',x.id);});document.getElementById('tenList').innerHTML=mkTbl(['رقم','اسم','طابق','المخالفة','الإجراء','الحالة',''],r);}
+function renderSafe(){
+  var counts={ok:0,service:0,expired:0,missing:0};
+  DB.safety.forEach(function(r){if(counts[r.sfst]!==undefined)counts[r.sfst]++;});
+  ['ok','service','expired','missing'].forEach(function(k,i){var el=document.getElementById(['sf_ok_count','sf_svc_count','sf_exp_count','sf_mis_count'][i]);if(el)el.textContent=counts[k];});
+  var r=DB.safety.slice().reverse().map(function(x){var dl=daysLeft(x.exp);return mkRow([x.sfnum,x.sfzone,x.sfty,x.exp,daysPill(dl),stBadge(x.sfst)],'safety',x.id);});
+  document.getElementById('sfList').innerHTML=mkTbl(['الرقم','المنطقة','النوع','الانتهاء','المتبقي','الحالة',''],r);
+}
+function renderCon(){var r=DB.contracts.slice().reverse().map(function(x){var dl=daysLeft(x.end);return mkRow([x.ctype,x.cname,x.ref,x.end,daysPill(dl),stBadge(x.cst)],'contracts',x.id);});document.getElementById('conList').innerHTML=mkTbl(['النوع','الجهة','الرقم','الانتهاء','المتبقي','الحالة',''],r);}
+function renderLs(){var r=DB.landscape.slice().reverse().map(function(x){return mkRow([x.lszone,x.ltype,x.date,x.next,stBadge(x.lst)],'landscape',x.id);});document.getElementById('lsList').innerHTML=mkTbl(['المنطقة','العمل','التنفيذ','القادم','الحالة',''],r);}
+function renderPest(){var r=DB.pest.slice().reverse().map(function(x){return mkRow([x.ptype,x.pzone,x.date,x.next,x.mat],'pest',x.id);});document.getElementById('pcList').innerHTML=mkTbl(['النوع','المنطقة','التنفيذ','القادم','المواد',''],r);}
+function renderBak(){var r=DB.bakhoor.slice().reverse().map(function(x){var dl=daysLeft(x.bkexp);return mkRow([x.bknum,x.bkname,x.bkfloor,x.bkref,x.bkexp,daysPill(dl),stBadge(x.bkst)],'bakhoor',x.id);});document.getElementById('bakList').innerHTML=mkTbl(['رقم','اسم','طابق','التصريح','الانتهاء','المتبقي','الحالة',''],r);}
+
+// ─── REPORT ──────────────────────────────────────────────────────
+function generateReport(){
+  var t=today(); var now=new Date();
+  var tours=DB.tour.filter(function(r){return r.ts&&r.ts.slice(0,10)===t;});
+  var incs=DB.incidents.filter(function(r){return r.ts&&r.ts.slice(0,10)===t;});
+  var viols=DB.tenants.filter(function(r){return r.ts&&r.ts.slice(0,10)===t;});
+  var openAI=DB.actionItems.filter(function(r){return r.status!=='done';});
+  var h=calcHeat();
+  var NL=String.fromCharCode(10);
+  var SEP='==================================='+NL;
+  var lines=[];
+  lines.push(SEP);
+  lines.push('  تقرير نهاية الشفت المسائي'+NL);
+  lines.push('  '+now.toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'})+NL);
+  lines.push('  الشفت: 4:00 م — 12:00 ص'+NL);
+  lines.push(SEP+NL);
+  lines.push('🌡️ صحة المول: '+h.heat+'% ('+(h.heat>=80?'جيد':h.heat>=60?'متوسط':'يحتاج تدخل')+')'+NL+NL);
+  lines.push('📊 ملخص الشفت:'+NL);
+  lines.push('• زيارات المعارض: '+tours.length+' معرض'+NL);
+  lines.push('• المعارض المغلقة: '+tours.filter(function(r){return r.flags.close;}).length+NL);
+  lines.push('• المخالفات: '+viols.length+NL);
+  lines.push('• الحوادث: '+incs.length+NL);
+  lines.push('• Action Items مفتوحة: '+openAI.length+NL+NL);
+  if(incs.length){lines.push('🚨 الحوادث:'+NL);incs.forEach(function(r,i){lines.push((i+1)+'. '+r.itype+' — '+r.izone+NL);});lines.push(NL);}
+  if(viols.length){lines.push('⚠️ المخالفات:'+NL);viols.forEach(function(r,i){lines.push((i+1)+'. محل '+r.tnum+' — '+r.tname+': '+r.tvtype+NL);});lines.push(NL);}
+  if(openAI.length){lines.push('⚡ بنود المتابعة المفتوحة:'+NL);openAI.slice(0,5).forEach(function(r,i){lines.push((i+1)+'. '+r.title+NL);});if(openAI.length>5)lines.push('... و '+(openAI.length-5)+' بند إضافي'+NL);lines.push(NL);}
+  lines.push(SEP);
+  lines.push('منظومة العمليات التنفيذية — GF & FF');
+  document.getElementById('shiftReportText').textContent=lines.join('');
+}
+function copyReport(){var txt=document.getElementById('shiftReportText').textContent;if(navigator.clipboard){navigator.clipboard.writeText(txt).then(function(){toast('✅ تم النسخ — جاهز للمشاركة','var(--g)');});}else{var ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);toast('✅ تم النسخ','var(--g)');}}
+function renderMonthStats(){
+  var now=new Date();var firstDay=new Date(now.getFullYear(),now.getMonth(),1).toISOString().slice(0,10);
+  var stats=[{label:'حوادث الشهر',val:DB.incidents.filter(function(r){return r.ts&&r.ts.slice(0,10)>=firstDay;}).length,col:'var(--d)'},{label:'مخالفات الشهر',val:DB.tenants.filter(function(r){return r.ts&&r.ts.slice(0,10)>=firstDay;}).length,col:'var(--w)'},{label:'بلاغات صيانة',val:DB.maint.filter(function(r){return r.ts&&r.ts.slice(0,10)>=firstDay;}).length,col:'var(--a)'},{label:'زيارات المعارض',val:DB.tour.filter(function(r){return r.ts&&r.ts.slice(0,10)>=firstDay;}).length,col:'var(--g)'}];
+  var el=document.getElementById('monthStats');if(!el)return;
+  el.innerHTML='<div class="kgrid">'+stats.map(function(s){return'<div class="kc"><div class="kv" style="color:'+s.col+'">'+s.val+'</div><div class="kl">'+s.label+'</div></div>';}).join('')+'</div>';
+}
+function renderHistory(){
+  var filt=v('h_f');var dFilt=v('h_d');
+  var cats=filt==='all'?['tour','maint','incidents','tenants','safety','contracts','landscape','pest','bakhoor']:[filt];
+  var labels={tour:'🏃 جولة',maint:'🔧 صيانة',incidents:'🚨 حادثة',tenants:'🏪 مخالفة',safety:'🔥 سلامة',contracts:'📄 عقد',landscape:'🌿 لاندسكيب',pest:'🐛 Pest',bakhoor:'✦ بخور'};
+  var all=[];cats.forEach(function(c){(DB[c]||[]).forEach(function(r){all.push(Object.assign({},r,{_c:c}));});});
+  all.sort(function(a,b){return b.ts>a.ts?1:-1;});
+  if(dFilt)all=all.filter(function(r){return r.ts&&r.ts.slice(0,10)===dFilt;});
+  var rows=all.slice(0,100).map(function(r){
+    var det=r._c==='tour'?r.num+' '+(r.name||''):r._c==='maint'?r.mtype+' '+r.mzone:r._c==='incidents'?r.itype+' '+r.izone:r._c==='tenants'?r.tnum+' '+r.tname:r._c==='safety'?r.sfnum+' '+r.sfzone:r._c==='contracts'?r.ctype+' '+r.cname:r._c==='landscape'?r.lszone+' '+r.ltype:r._c==='pest'?r.ptype+' '+r.pzone:r.bknum+' '+r.bkname;
+    return'<tr><td>'+r.ts.slice(0,16).replace('T',' ')+'</td><td>'+labels[r._c]+'</td><td>'+det+'</td><td><button class="btn d sm" data-cat="'+r._c+'" data-id="'+r.id+'" onclick="delByAttr(this)">حذف</button></td></tr>';
+  });
+  document.getElementById('histList').innerHTML=mkTbl(['التاريخ','النوع','التفاصيل',''],rows);
+}
+
+// ─── BACKUP ──────────────────────────────────────────────────────
+function exportBackup(){
+  var data={version:6,exportDate:new Date().toISOString(),data:DB};
+  var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);var a=document.createElement('a');
+  a.href=url;a.download='mall-ops-backup-'+today()+'.json';a.click();URL.revokeObjectURL(url);
+  localStorage.setItem('lastBackup',new Date().toISOString());
+  updateBackupInfo();toast('✅ تم تصدير النسخة الاحتياطية','var(--g)');
+}
+function importBackup(event){
+  var file=event.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){try{var d=JSON.parse(e.target.result);if(d.data){Object.assign(DB,d.data);saveDB();renderAll();toast('✅ تم استيراد البيانات بنجاح','var(--g)');}else toast('ملف غير صالح','var(--d)');}catch(err){toast('خطأ في الملف','var(--d)');}};
+  reader.readAsText(file);
+}
+function updateBackupInfo(){var lb=localStorage.getItem('lastBackup');var el=document.getElementById('lastBackupInfo');if(el&&lb)el.textContent='آخر نسخة احتياطية: '+new Date(lb).toLocaleDateString('ar-SA');}
+
+// ─── RENDER ALL ───────────────────────────────────────────────────
+function renderAll(){
+  renderDash();renderActions();renderIntel();renderMaint();renderInc();
+  renderTen();renderSafe();renderCon();renderExpiring();renderLs();
+  renderPest();renderBak();renderTourLog();updateTourKPI();renderHistory();renderMonthStats();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────
+function init(){
+  var now=new Date();
+  document.getElementById('dateBadge').textContent=now.toLocaleDateString('ar-SA',{month:'short',day:'numeric'});
+  document.getElementById('pl_date').value=today();
+  document.getElementById('i_date').value=now.toISOString().slice(0,16);
+  document.getElementById('ls_date').value=today();
+  document.getElementById('pc_date').value=today();
+  document.getElementById('ai_due').value=new Date(Date.now()+3*86400000).toISOString().slice(0,10);
+  buildTourStars();buildPeriodContent(0);
+  renderDash();updateAIBadge();updateBackupInfo();
+}
+init();
+</script>
+</body>
+</html>
